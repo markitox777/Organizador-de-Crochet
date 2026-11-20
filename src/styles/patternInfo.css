@@ -1,0 +1,199 @@
+
+.kuro-info {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #f0dce6;
+  border-radius: 20px;
+  color: #80556d;
+}
+
+.kuro-info-header {
+  margin-bottom: 24px;
+}
+
+.kuro-info-header h3 {
+  margin: 0 0 8px;
+  color: #b96791;
+  font-size: 22px;
+}
+
+.kuro-info-header p {
+  margin: 0;
+  color: #a78b9b;
+}
+
+.kuro-info form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kuro-info-two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.kuro-info-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kuro-info-field input,
+.kuro-info-field select,
+.kuro-info-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  border: 1px solid #efd7e3;
+  border-radius: 12px;
+  background: #fffafd;
+  color: #70465d;
+  font: inherit;
+  font-weight: 400;
+  outline: none;
+}
+
+.kuro-info-field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.kuro-info-field input:focus,
+.kuro-info-field select:focus,
+.kuro-info-field textarea:focus {
+  border-color: #d88eaf;
+  box-shadow: 0 0 0 3px #fbe4ef;
+}
+
+.kuro-info-save {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.kuro-info-save button,
+.kuro-info-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #d985aa;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kuro-info-save button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.kuro-info-pdf {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px dashed #e9bcd1;
+  border-radius: 15px;
+  background: #fff8fb;
+}
+
+.kuro-info-pdf h4 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 15px;
+  color: #a85c82;
+}
+
+.kuro-info-pdf p {
+  color: #94788a;
+  line-height: 1.6;
+}
+
+.kuro-info-pdf-file {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.kuro-info-pdf-file span,
+.kuro-info-pdf-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kuro-info-pdf-file span {
+  overflow-wrap: anywhere;
+}
+
+.kuro-info-pdf-actions button {
+  padding: 9px 12px;
+  border: 1px solid #e9c6d7;
+  border-radius: 9px;
+  background: white;
+  color: #a65b82;
+  cursor: pointer;
+}
+
+.kuro-info-upload {
+  margin-top: 10px;
+}
+
+.kuro-info-message {
+  margin-top: 16px;
+  color: #a65b82;
+  font-weight: 600;
+}
+
+.kuro-book-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  padding: 6px;
+  border-radius: 14px;
+  background: #fff1f7;
+}
+
+.kuro-book-tabs button {
+  flex: 1;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #a96c8b;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kuro-book-tabs button.active {
+  background: #fff;
+  color: #b95c89;
+  box-shadow: 0 2px 10px #d78aaa20;
+}
+
+@media (max-width: 600px) {
+  .kuro-info {
+    padding: 17px;
+  }
+
+  .kuro-info-two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .kuro-book-tabs {
+    flex-direction: column;
+  }
+}

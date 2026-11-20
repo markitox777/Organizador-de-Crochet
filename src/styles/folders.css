@@ -1,0 +1,135 @@
+
+/* KUROTEX - CARPETAS */
+
+.kuro-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(200px, 1fr)
+  );
+  gap: 20px;
+}
+
+.kuro-folder-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #efd7e2;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(132, 76, 106, 0.05);
+  transition: transform 0.2s;
+}
+
+.kuro-folder-card:hover {
+  transform: translateY(-3px);
+}
+
+.kuro-folder-open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #d47da3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kuro-folder-open strong {
+  color: #88536e;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.kuro-folder-open span {
+  color: #aa879a;
+  font-size: 13px;
+}
+
+.kuro-folder-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #f8e8ef;
+}
+
+.kuro-folder-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 33px;
+  height: 33px;
+  border: 1px solid #f0dce5;
+  border-radius: 9px;
+  background: #fff3f8;
+  color: #a9547b;
+  cursor: pointer;
+}
+
+.kuro-folder-actions button:hover {
+  background: #fce2ee;
+}
+
+.kuro-folder-create {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid #efd7e2;
+  border-radius: 14px;
+  background: #fffafd;
+}
+
+.kuro-folder-create input {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px;
+  border: 1px solid #ead5e0;
+  border-radius: 10px;
+  background: white;
+  color: #80546b;
+  font: inherit;
+}
+
+.kuro-pattern-details {
+  margin-bottom: 22px;
+  padding: 20px;
+  border: 1px solid #f0dce5;
+  border-radius: 15px;
+  background: #fffafd;
+  color: #805c70;
+}
+
+.kuro-pattern-details h3 {
+  margin: 0 0 14px;
+  color: #a9547b;
+}
+
+.kuro-pattern-details p {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .kuro-folder-grid {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+    gap: 12px;
+  }
+
+  .kuro-folder-card {
+    padding: 13px;
+  }
+
+  .kuro-folder-open strong {
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,431 @@
+
+/* ==========================================
+   KUROTEX - BIBLIOTECA ROSA MINIMALISTA
+   ========================================== */
+
+.kuro-library {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+}
+
+.kuro-library-heading {
+  margin-bottom: 24px;
+}
+
+.kuro-library-heading h2,
+.kuro-library-editor-heading h2 {
+  margin: 0 0 8px;
+  color: #925373;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.kuro-library-heading p,
+.kuro-library-editor-heading p {
+  margin: 0;
+  color: #aa879a;
+  font-size: 14px;
+}
+
+/* Pestañas */
+
+.kuro-library-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 26px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0dce5;
+}
+
+.kuro-library-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 17px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #9b788b;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.kuro-library-tabs button:hover {
+  background: #fff0f6;
+}
+
+.kuro-library-tabs button.active {
+  background: #fce4ee;
+  color: #ae5b83;
+  font-weight: 700;
+}
+
+/* Barra de búsqueda */
+
+.kuro-library-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.kuro-library-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 180px;
+  max-width: 420px;
+  padding: 12px 15px;
+  border: 1px solid #efd7e2;
+  border-radius: 12px;
+  background: #fff;
+  color: #ba88a1;
+}
+
+.kuro-library-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #80546b;
+  font: inherit;
+  font-size: 14px;
+}
+
+/* Botones */
+
+.kuro-library-primary,
+.kuro-library-secondary,
+.kuro-library-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.kuro-library-primary {
+  border: 1px solid #d67fa5;
+  background: #d67fa5;
+  color: #fff;
+  font-weight: 600;
+}
+
+.kuro-library-primary:hover {
+  background: #c66b95;
+}
+
+.kuro-library-secondary {
+  border: 1px solid #efd7e2;
+  background: #fff2f7;
+  color: #a9547b;
+}
+
+.kuro-library-back {
+  padding-left: 0;
+  border: 0;
+  background: transparent;
+  color: #a9547b;
+  margin-bottom: 20px;
+}
+
+.kuro-library-editor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+/* Cuadrícula de libros */
+
+.kuro-library-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(185px, 1fr)
+  );
+  gap: 24px;
+  align-items: start;
+}
+
+/* Tarjetas */
+
+.kuro-library-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #f0dce5;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(132, 76, 106, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kuro-library-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 24px rgba(132, 76, 106, 0.11);
+}
+
+.kuro-library-card-cover {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: #fff0f6;
+  cursor: pointer;
+}
+
+.kuro-library-card-cover img,
+.kuro-library-placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+}
+
+.kuro-library-card-cover img {
+  object-fit: cover;
+}
+
+.kuro-library-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(
+    145deg,
+    #fff0f6,
+    #f6d7e6
+  );
+  color: #b66b91;
+}
+
+.kuro-library-placeholder span {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.kuro-library-card-info {
+  padding: 15px;
+}
+
+.kuro-library-card-info h3 {
+  margin: 0 0 6px;
+  color: #80546b;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.kuro-library-card-info p {
+  margin: 0 0 14px;
+  color: #aa91a0;
+  font-size: 12px;
+}
+
+.kuro-library-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kuro-library-card-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid #f0dce5;
+  border-radius: 9px;
+  background: #fff3f8;
+  color: #a9547b;
+  cursor: pointer;
+}
+
+.kuro-library-card-actions button:first-child {
+  flex: 1;
+  font-weight: 600;
+}
+
+.kuro-library-card-actions button:hover {
+  background: #fce2ee;
+}
+
+/* Formulario */
+
+.kuro-library-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 26px;
+  padding: 24px;
+  border: 1px solid #f0dce5;
+  border-radius: 17px;
+  background: #fffafd;
+}
+
+.kuro-library-form-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kuro-library-form-heading h3 {
+  margin: 0;
+  color: #a9547b;
+  font-size: 19px;
+}
+
+.kuro-library-form-heading button {
+  border: 0;
+  background: transparent;
+  color: #a9547b;
+  cursor: pointer;
+}
+
+.kuro-library-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #805c70;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.kuro-library-field input {
+  padding: 12px;
+  border: 1px solid #ead5e0;
+  border-radius: 10px;
+  background: #fff;
+  color: #80546b;
+  font: inherit;
+}
+
+.kuro-library-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  color: #805c70;
+  font-size: 14px;
+}
+
+.kuro-library-upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 15px;
+  border: 1px dashed #dca0bc;
+  border-radius: 11px;
+  background: #fff3f8;
+  color: #a9547b;
+  cursor: pointer;
+}
+
+.kuro-library-cover-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.kuro-library-cover-preview img {
+  width: 130px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.kuro-library-cover-preview button {
+  border: 0;
+  background: transparent;
+  color: #a9547b;
+  cursor: pointer;
+}
+
+.kuro-library-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Biblioteca vacía */
+
+.kuro-library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 230px;
+  padding: 30px;
+  border: 1px dashed #e7c3d5;
+  border-radius: 17px;
+  background: #fffafd;
+  color: #aa7792;
+  text-align: center;
+}
+
+.kuro-library-empty h3,
+.kuro-library-empty p {
+  margin: 0;
+}
+
+.kuro-library button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Adaptación a celular */
+
+@media (max-width: 600px) {
+  .kuro-library-heading h2 {
+    font-size: 23px;
+  }
+
+  .kuro-library-tabs {
+    flex-wrap: wrap;
+  }
+
+  .kuro-library-tabs button {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .kuro-library-grid {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+    gap: 12px;
+  }
+
+  .kuro-library-card-info {
+    padding: 11px;
+  }
+
+  .kuro-library-card-actions {
+    gap: 4px;
+  }
+
+  .kuro-library-card-actions button {
+    padding: 6px;
+  }
+
+  .kuro-library-form {
+    padding: 16px;
+  }
+}
