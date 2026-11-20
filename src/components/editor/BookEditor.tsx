@@ -36,6 +36,9 @@ import type {
   PaperSize
 } from '../../services/bookService';
 
+import '../../styles/bookEditor.css';
+import PageThumbnails from './PageThumbnails';
+
 type Interaction = {
   id: string;
   mode: 'move' | 'resize';
@@ -357,7 +360,7 @@ export default function BookEditor({
     }));
   };
 
-  const addText = () => {
+  const addText = (preset: 'normal' | 'title' | 'subtitle' = 'normal') => {
     const element: BookElement = {
       id: crypto.randomUUID(),
       type: 'text',
@@ -365,7 +368,14 @@ export default function BookEditor({
       y: 70,
       width: 280,
       height: 140,
-      content: 'Escribe aquí...'
+      content: preset === 'title' ? 'Escribe un título...' : preset === 'subtitle' ? 'Escribe un subtítulo...' : 'Escribe aquí...',
+      textStyle: {
+        variant: preset,
+        fontFamily: 'Arial, sans-serif',
+        fontSize: preset === 'title' ? 32 : preset === 'subtitle' ? 23 : 16,
+        color: '#514750',
+        bold: preset !== 'normal'
+      }
     };
 
     updatePage(page => ({
@@ -613,6 +623,35 @@ export default function BookEditor({
       element => element.id === selectedId
     );
 
+  const selectedText = currentPage.elements.find(
+    element => element.id === selectedId && element.type === 'text'
+  );
+
+  const selectedTextStyle = selectedText?.textStyle;
+
+  const changeTextStyle = (changes: Partial<NonNullable<BookElement['textStyle']>>) => {
+    if (!selectedText) return;
+    updateElement(selectedText.id, {
+      textStyle: {
+        variant: 'normal',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: 16,
+        color: '#514750',
+        bold: false,
+        ...selectedTextStyle,
+        ...changes
+      }
+    });
+  };
+
+  const applyTextPreset = (variant: 'normal' | 'title' | 'subtitle') => {
+    changeTextStyle({
+      variant,
+      fontSize: variant === 'title' ? 32 : variant === 'subtitle' ? 23 : 16,
+      bold: variant !== 'normal'
+    });
+  };
+
   const canMoveBackward = selectedIndex > 0;
 
   const canMoveForward =
@@ -651,7 +690,7 @@ export default function BookEditor({
         <div className="kuro-tool-group">
           <button
             type="button"
-            onClick={addText}
+            onClick={() => addText('normal')}
             disabled={!bookLoaded}
             title="Agregar texto"
           >
@@ -693,6 +732,11 @@ export default function BookEditor({
           </button>
         </div>
 
+        <div className="kuro-tool-group">
+          <button type="button" onClick={() => addText('title')} disabled={!bookLoaded} title="Agregar título">Título</button>
+          <button type="button" onClick={() => addText('subtitle')} disabled={!bookLoaded} title="Agregar subtítulo">Subtítulo</button>
+        </div>
+
         <div className="kuro-tool-divider" />
 
         <div className="kuro-tool-group">
@@ -727,6 +771,63 @@ export default function BookEditor({
           <span>Eliminar</span>
         </button>
       </div>
+
+      {selectedText && (
+        <div className="kuro-text-format" aria-label="Formato de texto">
+          <label>
+            Estilo
+            <select
+              value={selectedTextStyle?.variant ?? 'normal'}
+              onChange={event => applyTextPreset(event.target.value as 'normal' | 'title' | 'subtitle')}
+            >
+              <option value="normal">Texto normal</option>
+              <option value="title">Título</option>
+              <option value="subtitle">Subtítulo</option>
+            </select>
+          </label>
+          <label>
+            Fuente
+            <select
+              value={selectedTextStyle?.fontFamily ?? 'Arial, sans-serif'}
+              onChange={event => changeTextStyle({ fontFamily: event.target.value })}
+            >
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+              <option value="'Comic Sans MS', cursive">Comic Sans</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="'Poppins', sans-serif">Poppins (si está instalada)</option>
+            </select>
+          </label>
+          <label>
+            Tamaño
+            <input
+              type="number"
+              min={8}
+              max={72}
+              value={selectedTextStyle?.fontSize ?? 16}
+              onChange={event => changeTextStyle({ fontSize: Math.max(8, Math.min(72, Number(event.target.value) || 16)) })}
+            />
+          </label>
+          <button
+            type="button"
+            className={selectedTextStyle?.bold ? 'is-active' : ''}
+            onClick={() => changeTextStyle({ bold: !(selectedTextStyle?.bold ?? false) })}
+            aria-pressed={selectedTextStyle?.bold ?? false}
+            title="Negrita en todo el cuadro"
+          >
+            <strong>B</strong> Negrita
+          </button>
+          <label>
+            Color
+            <input
+              type="color"
+              value={selectedTextStyle?.color ?? '#514750'}
+              onChange={event => changeTextStyle({ color: event.target.value })}
+            />
+          </label>
+        </div>
+      )}
 
       {paperPanelOpen && (
         <div className="kuro-paper-panel">
@@ -858,6 +959,16 @@ export default function BookEditor({
         </div>
       )}
 
+      <div className="kuro-editor-layout">
+        {bookLoaded && (
+          <PageThumbnails
+            pages={pages}
+            activeIndex={pageIndex}
+            onSelect={changePage}
+            onAdd={addPage}
+          />
+        )}
+
       <div
         className="kuro-editor-workspace"
         style={{
@@ -919,6 +1030,12 @@ export default function BookEditor({
                   {element.type === 'text' ? (
                     <textarea
                       value={element.content}
+                      style={{
+                        fontFamily: element.textStyle?.fontFamily ?? 'inherit',
+                        fontSize: `${element.textStyle?.fontSize ?? 16}px`,
+                        fontWeight: element.textStyle?.bold ? 700 : 400,
+                        color: element.textStyle?.color ?? '#514750'
+                      }}
                       onPointerDown={event => {
                         event.stopPropagation();
                         setSelectedId(element.id);
@@ -972,6 +1089,8 @@ export default function BookEditor({
             {paper.size.toUpperCase()}
           </div>
         </div>
+      </div>
+
       </div>
 
       <div className="kuro-editor-footer">

@@ -32,6 +32,13 @@ export type BookElement = {
   width: number;
   height: number;
   content: string;
+  textStyle?: {
+    variant: 'normal' | 'title' | 'subtitle';
+    fontFamily: string;
+    fontSize: number;
+    color: string;
+    bold: boolean;
+  };
 };
 
 export type BookPage = {

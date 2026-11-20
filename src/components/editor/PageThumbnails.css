@@ -1,0 +1,251 @@
+
+.kuro-thumbnails {
+  width: 180px;
+  flex-shrink: 0;
+  padding: 16px 12px;
+  background: #fffafd;
+  border-right: 1px solid #f0dce5;
+  box-sizing: border-box;
+}
+
+.kuro-thumbnails-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.kuro-thumbnails-header h4 {
+  margin: 0;
+  font-size: 13px;
+  color: #a6537c;
+}
+
+.kuro-thumbnails-header span {
+  font-size: 11px;
+  color: #ad7c96;
+}
+
+.kuro-thumbnails-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 650px;
+  overflow-y: auto;
+}
+
+.kuro-thumbnail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.kuro-thumbnail:hover {
+  background: #fff0f6;
+}
+
+.kuro-thumbnail.active {
+  background: #ffe9f2;
+  border-color: #d981a9;
+}
+
+.kuro-thumbnail-paper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 90px;
+  height: 125px;
+  padding: 9px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #fff6fa;
+  border: 1px solid #f0dce5;
+  box-shadow: 0 3px 9px rgba(80, 55, 70, 0.08);
+  text-align: left;
+}
+
+.kuro-thumbnail-paper span {
+  font-size: 7px;
+  color: #775a6b;
+  overflow-wrap: anywhere;
+}
+
+.kuro-thumbnail-paper img {
+  max-width: 100%;
+  max-height: 55px;
+  object-fit: contain;
+}
+
+.kuro-thumbnail-number {
+  color: #936b82;
+  font-size: 11px;
+}
+
+.kuro-thumbnail-add {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 6px;
+  background: #fff0f6;
+  border: 1px dashed #d981a9;
+  border-radius: 10px;
+  color: #a6537c;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.kuro-thumbnail-add:hover {
+  background: #ffe3ef;
+}
+
+@media (max-width: 700px) {
+  .kuro-thumbnails {
+    width: 100%;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid #f0dce5;
+  }
+
+  .kuro-thumbnails-list {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+  }
+
+  .kuro-thumbnail {
+    min-width: 112px;
+    width: 112px;
+  }
+}
+
+
+.kuro-thumbnails {
+  width: 180px;
+  flex-shrink: 0;
+  padding: 16px 12px;
+  background: #fffafd;
+  border-right: 1px solid #f0dce5;
+  box-sizing: border-box;
+}
+
+.kuro-thumbnails-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.kuro-thumbnails-header h4 {
+  margin: 0;
+  font-size: 13px;
+  color: #a6537c;
+}
+
+.kuro-thumbnails-header span {
+  font-size: 11px;
+  color: #ad7c96;
+}
+
+.kuro-thumbnails-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 650px;
+  overflow-y: auto;
+}
+
+.kuro-thumbnail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.kuro-thumbnail:hover {
+  background: #fff0f6;
+}
+
+.kuro-thumbnail.active {
+  background: #ffe9f2;
+  border-color: #d981a9;
+}
+
+.kuro-thumbnail-paper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 90px;
+  height: 125px;
+  padding: 9px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #fff6fa;
+  border: 1px solid #f0dce5;
+  box-shadow: 0 3px 9px rgba(80, 55, 70, 0.08);
+  text-align: left;
+}
+
+.kuro-thumbnail-paper span {
+  font-size: 7px;
+  color: #775a6b;
+  overflow-wrap: anywhere;
+}
+
+.kuro-thumbnail-paper img {
+  max-width: 100%;
+  max-height: 55px;
+  object-fit: contain;
+}
+
+.kuro-thumbnail-number {
+  color: #936b82;
+  font-size: 11px;
+}
+
+.kuro-thumbnail-add {
+  width: 100%;
+  margin-top: 18px;
+  padding: 10px 6px;
+  background: #fff0f6;
+  border: 1px dashed #d981a9;
+  border-radius: 10px;
+  color: #a6537c;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.kuro-thumbnail-add:hover {
+  background: #ffe3ef;
+}
+
+@media (max-width: 700px) {
+  .kuro-thumbnails {
+    width: 100%;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid #f0dce5;
+  }
+
+  .kuro-thumbnails-list {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+  }
+
+  .kuro-thumbnail {
+    min-width: 112px;
+    width: 112px;
+  }
+}
