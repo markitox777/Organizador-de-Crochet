@@ -1,5 +1,6 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Editor } from '@tiptap/core';
 import type {
   ChangeEvent,
   CSSProperties,
@@ -18,7 +19,9 @@ import {
   BookOpen,
   FileText,
   Check,
-  X
+  X,
+  PanelsTopLeft,
+  MoreHorizontal
 } from 'lucide-react';
 
 import {
@@ -36,8 +39,9 @@ import type {
   PaperSize
 } from '../../services/bookService';
 
-import '../../styles/bookEditor.css';
+import '../../styles/kurotexEditorConsolidado.css';
 import PageThumbnails from './PageThumbnails';
+import RichTextEditor from './RichTextEditor';
 
 type Interaction = {
   id: string;
@@ -48,6 +52,9 @@ type Interaction = {
   startY: number;
   startWidth: number;
   startHeight: number;
+  pointerId: number;
+  pageIndex: number;
+  pageHeight: number;
 };
 
 type SaveStatus =
@@ -186,6 +193,101 @@ function newPage(
 }
 
 
+/**
+ * Mide el contenido real de Tiptap y sincroniza la altura del cuadro
+ * en coordenadas de la página (600 unidades), incluso en pantallas móviles.
+ */
+function AutoGrowTextBox({
+  element,
+  pageHeight,
+  pageRef,
+  onChange,
+  onHeightChange,
+  onSelect,
+  onEditorReady,
+  onEditorStateChange
+}: {
+  element: BookElement;
+  pageHeight: number;
+  pageRef: React.RefObject<HTMLDivElement | null>;
+  onChange: (html: string) => void;
+  onHeightChange: (height: number) => void;
+  onSelect: () => void;
+  onEditorReady: (id: string, editor: Editor | null) => void;
+  onEditorStateChange: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const heightRef = useRef(element.height);
+  const heightChangeRef = useRef(onHeightChange);
+  heightRef.current = element.height;
+  heightChangeRef.current = onHeightChange;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = container?.querySelector<HTMLElement>('.kuro-rich-text-content');
+    if (!container || !content) return;
+
+    let frame = 0;
+    const measure = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const pageWidth = pageRef.current?.clientWidth ?? PAGE_WIDTH;
+        if (!pageWidth) return;
+        const scale = pageWidth / PAGE_WIDTH;
+        // El texto usa píxeles CSS reales, mientras que el cuadro guarda
+        // su altura en unidades lógicas de la hoja.
+        const requiredPixels = Math.max(content.scrollHeight, content.getBoundingClientRect().height);
+        const desired = Math.max(50, Math.ceil((requiredPixels + 4) / scale));
+        const available = Math.max(50, pageHeight - element.y);
+        const next = Math.min(desired, available);
+        if (Math.abs(next - heightRef.current) > 2) {
+          heightRef.current = next;
+          heightChangeRef.current(next);
+        }
+      });
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    if (pageRef.current) observer.observe(pageRef.current);
+    const mutations = new MutationObserver(measure);
+    mutations.observe(content, { childList: true, characterData: true, subtree: true, attributes: true });
+    measure();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      mutations.disconnect();
+    };
+  }, [element.id, element.y, pageHeight, pageRef]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="kuro-text-container kuro-auto-grow-text"
+      style={{
+        fontFamily: element.textStyle?.fontFamily ?? 'Arial, sans-serif',
+        fontSize: `${element.textStyle?.fontSize ?? 16}px`,
+        fontWeight: element.textStyle?.bold ? 700 : 400,
+        fontStyle: element.textStyle?.italic ? 'italic' : 'normal',
+        textDecoration: element.textStyle?.underline ? 'underline' : 'none',
+        color: element.textStyle?.color ?? '#514750'
+      }}
+      onPointerDown={event => {
+        event.stopPropagation();
+        onSelect();
+      }}
+    >
+      <RichTextEditor
+        elementId={element.id}
+        content={element.content}
+        onChange={onChange}
+        onEditorReady={onEditorReady}
+        onEditorStateChange={onEditorStateChange}
+      />
+    </div>
+  );
+}
+
 type BookEditorProps = {
   bookId?: string;
 };
@@ -199,6 +301,8 @@ export default function BookEditor({
   ]);
 
   const [pageIndex, setPageIndex] = useState(0);
+  const [mobilePagesOpen, setMobilePagesOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
 
   const [selectedId, setSelectedId] = useState<
     string | null
@@ -221,6 +325,24 @@ export default function BookEditor({
   const saveQueueRef = useRef<Promise<void>>(
     Promise.resolve()
   );
+
+  // Los editores viven dentro de cada cuadro, pero el menú se muestra arriba.
+  const [editors, setEditors] = useState<Map<string, Editor>>(() => new Map());
+  const [, refreshFormat] = useState(0);
+
+  const registerEditor = useCallback((id: string, editor: Editor | null) => {
+    setEditors(previous => {
+      if (editor ? previous.get(id) === editor : !previous.has(id)) return previous;
+      const next = new Map(previous);
+      if (editor) next.set(id, editor);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const refreshToolbar = useCallback(() => {
+    refreshFormat(previous => previous + 1);
+  }, []);
 
   const currentPage = pages[pageIndex];
 
@@ -492,33 +614,84 @@ export default function BookEditor({
     });
   };
 
+  // El gesto se escucha a nivel de ventana: funciona incluso cuando el dedo
+  // sale del botón o el navegador cambia el objetivo de los eventos.
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const interaction = interactionRef.current;
+      if (!interaction || event.pointerId !== interaction.pointerId) return;
+
+      if (event.cancelable) event.preventDefault();
+      const pageWidth = pageRef.current?.clientWidth ?? PAGE_WIDTH;
+      const scale = pageWidth / PAGE_WIDTH;
+      if (!scale) return;
+      const deltaX = (event.clientX - interaction.pointerX) / scale;
+      const deltaY = (event.clientY - interaction.pointerY) / scale;
+
+      setPages(previous => previous.map((page, index) => {
+        if (index !== interaction.pageIndex) return page;
+        let changed = false;
+        const elements = page.elements.map(item => {
+          if (item.id !== interaction.id) return item;
+          if (interaction.mode === 'move') {
+            const x = Math.max(0, Math.min(PAGE_WIDTH - item.width,
+              Math.round(interaction.startX + deltaX)));
+            const y = Math.max(0, Math.min(interaction.pageHeight - item.height,
+              Math.round(interaction.startY + deltaY)));
+            if (x === item.x && y === item.y) return item;
+            changed = true;
+            return { ...item, x, y };
+          }
+          const width = Math.max(80, Math.min(PAGE_WIDTH - interaction.startX,
+            Math.round(interaction.startWidth + deltaX)));
+          const height = Math.max(50, Math.min(interaction.pageHeight - interaction.startY,
+            Math.round(interaction.startHeight + deltaY)));
+          if (width === item.width && height === item.height) return item;
+          changed = true;
+          return { ...item, width, height };
+        });
+        return changed ? { ...page, elements } : page;
+      }));
+    };
+
+    const handlePointerEnd = (event: PointerEvent) => {
+      if (interactionRef.current?.pointerId === event.pointerId) {
+        interactionRef.current = null;
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove, { capture: true, passive: false });
+    window.addEventListener('pointerup', handlePointerEnd, true);
+    window.addEventListener('pointercancel', handlePointerEnd, true);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove, true);
+      window.removeEventListener('pointerup', handlePointerEnd, true);
+      window.removeEventListener('pointercancel', handlePointerEnd, true);
+    };
+  }, []);
+
   const startInteraction = (
     event: ReactPointerEvent<HTMLDivElement>,
     element: BookElement,
     mode: 'move' | 'resize'
   ) => {
-    if (
-      mode === 'move' &&
-      (event.target as HTMLElement).closest(
-        'textarea'
-      )
-    ) {
-      setSelectedId(element.id);
-      return;
-    }
-
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
 
-    event.currentTarget.setPointerCapture(
-      event.pointerId
-    );
-
-    setSelectedId(element.id);
+    // Sacar el foco del editor impide que el teclado se vuelva a abrir.
+    const focused = document.activeElement;
+    if (focused instanceof HTMLElement &&
+        (focused.isContentEditable || focused.closest('.kuro-rich-text-editor'))) {
+      focused.blur();
+    }
 
     interactionRef.current = {
       id: element.id,
       mode,
+      pointerId: event.pointerId,
+      pageIndex,
+      pageHeight,
       pointerX: event.clientX,
       pointerY: event.clientY,
       startX: element.x,
@@ -526,79 +699,9 @@ export default function BookEditor({
       startWidth: element.width,
       startHeight: element.height
     };
-  };
-
-  const moveInteraction = (
-    event: ReactPointerEvent<HTMLDivElement>
-  ) => {
-    const interaction = interactionRef.current;
-
-    if (!interaction) return;
-
-    const pageWidth =
-      pageRef.current?.clientWidth ?? PAGE_WIDTH;
-
-    const scale = pageWidth / PAGE_WIDTH;
-
-    const deltaX =
-      (event.clientX - interaction.pointerX) / scale;
-
-    const deltaY =
-      (event.clientY - interaction.pointerY) / scale;
-
-    if (interaction.mode === 'move') {
-      const element = currentPage.elements.find(
-        item => item.id === interaction.id
-      );
-
-      if (!element) return;
-
-      updateElement(interaction.id, {
-        x: Math.max(
-          0,
-          Math.min(
-            PAGE_WIDTH - element.width,
-            Math.round(
-              interaction.startX + deltaX
-            )
-          )
-        ),
-        y: Math.max(
-          0,
-          Math.min(
-            pageHeight - element.height,
-            Math.round(
-              interaction.startY + deltaY
-            )
-          )
-        )
-      });
-    } else {
-      updateElement(interaction.id, {
-        width: Math.max(
-          80,
-          Math.min(
-            PAGE_WIDTH - interaction.startX,
-            Math.round(
-              interaction.startWidth + deltaX
-            )
-          )
-        ),
-        height: Math.max(
-          50,
-          Math.min(
-            pageHeight - interaction.startY,
-            Math.round(
-              interaction.startHeight + deltaY
-            )
-          )
-        )
-      });
-    }
-  };
-
-  const stopInteraction = () => {
-    interactionRef.current = null;
+    setSelectedId(element.id);
+    // El propio control conserva el puntero; los movimientos se procesan en window.
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* navegador sin captura */ }
   };
 
   const addPage = () => {
@@ -611,11 +714,87 @@ export default function BookEditor({
 
     setPageIndex(nextIndex);
     setSelectedId(null);
+    setMobilePagesOpen(false);
+    setMobileToolsOpen(false);
+  };
+
+  // Eliminar una página con confirmación, sin dejar el cuaderno vacío.
+  const deletePage = (index: number) => {
+    if (!bookLoaded || pages.length <= 1 || index < 0 || index >= pages.length) return;
+
+    const confirmed = window.confirm(
+      `¿Eliminar la página ${index + 1}?\n\nEsta acción eliminará su contenido y no se puede deshacer.`
+    );
+    if (!confirmed) return;
+
+    // Cerrar cualquier edición o arrastre activo antes de cambiar de hoja.
+    interactionRef.current = null;
+    setSelectedId(null);
+    setMobilePagesOpen(false);
+    setMobileToolsOpen(false);
+    setPages(previous => previous.length <= 1 ? previous : previous.filter((_, position) => position !== index));
+    setPageIndex(previous => {
+      if (index < previous) return previous - 1;
+      if (index === previous) return Math.max(0, previous - 1);
+      return previous;
+    });
+  };
+
+  // Crear una copia independiente inmediatamente después de la página elegida.
+  const duplicatePage = (index: number) => {
+    if (!bookLoaded || index < 0 || index >= pages.length) return;
+
+    const original = pages[index];
+    const copy: BookPage = {
+      ...original,
+      id: crypto.randomUUID(),
+      paper: { ...DEFAULT_PAPER, ...original.paper },
+      elements: original.elements.map(element => ({
+        ...element,
+        id: crypto.randomUUID(),
+        ...(element.textStyle ? { textStyle: { ...element.textStyle } } : {})
+      }))
+    };
+
+    interactionRef.current = null;
+    setSelectedId(null);
+    setMobilePagesOpen(false);
+    setMobileToolsOpen(false);
+    setPages(previous => [
+      ...previous.slice(0, index + 1),
+      copy,
+      ...previous.slice(index + 1)
+    ]);
+    setPageIndex(index + 1);
+  };
+
+  // Intercambiar páginas sin modificar su contenido ni sus identificadores.
+  const movePage = (index: number, direction: 'up' | 'down') => {
+    if (!bookLoaded || index < 0 || index >= pages.length) return;
+    const target = direction === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= pages.length) return;
+
+    interactionRef.current = null;
+    setSelectedId(null);
+    setPages(previous => {
+      if (index >= previous.length || target >= previous.length) return previous;
+      const reordered = [...previous];
+      [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+      return reordered;
+    });
+    // Mantener visible la misma página, aunque cambie de posición.
+    setPageIndex(previous => {
+      if (previous === index) return target;
+      if (previous === target) return index;
+      return previous;
+    });
   };
 
   const changePage = (index: number) => {
     setPageIndex(index);
     setSelectedId(null);
+    setMobilePagesOpen(false);
+    setMobileToolsOpen(false);
   };
 
   const selectedIndex =
@@ -626,31 +805,11 @@ export default function BookEditor({
   const selectedText = currentPage.elements.find(
     element => element.id === selectedId && element.type === 'text'
   );
-
-  const selectedTextStyle = selectedText?.textStyle;
-
-  const changeTextStyle = (changes: Partial<NonNullable<BookElement['textStyle']>>) => {
-    if (!selectedText) return;
-    updateElement(selectedText.id, {
-      textStyle: {
-        variant: 'normal',
-        fontFamily: 'Arial, sans-serif',
-        fontSize: 16,
-        color: '#514750',
-        bold: false,
-        ...selectedTextStyle,
-        ...changes
-      }
-    });
-  };
-
-  const applyTextPreset = (variant: 'normal' | 'title' | 'subtitle') => {
-    changeTextStyle({
-      variant,
-      fontSize: variant === 'title' ? 32 : variant === 'subtitle' ? 23 : 16,
-      bold: variant !== 'normal'
-    });
-  };
+  const activeEditor = selectedText ? editors.get(selectedText.id) : undefined;
+  const activeBold = activeEditor?.isActive('bold') ?? false;
+  const activeItalic = activeEditor?.isActive('italic') ?? false;
+  const activeUnderline = activeEditor?.isActive('underline') ?? false;
+  const currentFont = activeEditor?.getAttributes('textStyle').fontFamily as string | undefined;
 
   const canMoveBackward = selectedIndex > 0;
 
@@ -684,6 +843,44 @@ export default function BookEditor({
           {saveStatus === 'error' &&
             'Error de guardado'}
         </span>
+      </div>
+
+      {/* Barra exclusiva para celular. La barra de escritorio se conserva. */}
+      <div className="kuro-mobile-tools" aria-label="Herramientas del mini libro">
+        <div className="kuro-mobile-tools-main">
+          <button type="button" onClick={() => { addText('normal'); setMobileToolsOpen(false); }} disabled={!bookLoaded}>
+            <Type size={19} /><span>Texto</span>
+          </button>
+          <label className="kuro-mobile-image-button">
+            <ImagePlus size={19} /><span>Imagen</span>
+            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => { addImage(event); setMobileToolsOpen(false); }} disabled={!bookLoaded} hidden />
+          </label>
+          <button type="button" className={paperPanelOpen ? 'is-active' : ''}
+            onClick={() => { setPaperPanelOpen(previous => !previous); setMobileToolsOpen(false); }}
+            disabled={!bookLoaded} aria-expanded={paperPanelOpen}>
+            <FileText size={19} /><span>Papel</span>
+          </button>
+          <button type="button" className={mobileToolsOpen ? 'is-active' : ''}
+            onClick={() => setMobileToolsOpen(previous => !previous)}
+            disabled={!bookLoaded} aria-expanded={mobileToolsOpen} aria-controls="kuro-mobile-more-menu">
+            <MoreHorizontal size={19} /><span>Más</span>
+          </button>
+        </div>
+        {mobileToolsOpen && (
+          <div id="kuro-mobile-more-menu" className="kuro-mobile-tools-more" aria-label="Más herramientas">
+            <button type="button" onClick={() => { addText('title'); setMobileToolsOpen(false); }}>Título</button>
+            <button type="button" onClick={() => { addText('subtitle'); setMobileToolsOpen(false); }}>Subtítulo</button>
+            <button type="button" onClick={() => { moveLayer('forward'); setMobileToolsOpen(false); }} disabled={!canMoveForward}>
+              <ArrowUp size={17} /> Adelante
+            </button>
+            <button type="button" onClick={() => { moveLayer('backward'); setMobileToolsOpen(false); }} disabled={!canMoveBackward}>
+              <ArrowDown size={17} /> Atrás
+            </button>
+            <button type="button" className="kuro-mobile-danger" onClick={() => { deleteSelected(); setMobileToolsOpen(false); }} disabled={!selectedId}>
+              <Trash2 size={17} /> Eliminar
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="kuro-editor-toolbar">
@@ -773,59 +970,57 @@ export default function BookEditor({
       </div>
 
       {selectedText && (
-        <div className="kuro-text-format" aria-label="Formato de texto">
-          <label>
-            Estilo
+        <div className="kuro-top-text-format" role="toolbar" aria-label="Formato de texto">
+          <span className="kuro-format-caption">Formato de texto</span>
+          <label className="kuro-format-font">
+            <span>Fuente</span>
             <select
-              value={selectedTextStyle?.variant ?? 'normal'}
-              onChange={event => applyTextPreset(event.target.value as 'normal' | 'title' | 'subtitle')}
+              value={currentFont ?? ''}
+              disabled={!activeEditor}
+              onChange={event => {
+                if (!activeEditor) return;
+                if (event.target.value) activeEditor.chain().focus().setFontFamily(event.target.value).run();
+                else activeEditor.chain().focus().unsetFontFamily().run();
+              }}
             >
-              <option value="normal">Texto normal</option>
-              <option value="title">Título</option>
-              <option value="subtitle">Subtítulo</option>
-            </select>
-          </label>
-          <label>
-            Fuente
-            <select
-              value={selectedTextStyle?.fontFamily ?? 'Arial, sans-serif'}
-              onChange={event => changeTextStyle({ fontFamily: event.target.value })}
-            >
+              <option value="">Fuente original</option>
               <option value="Arial, sans-serif">Arial</option>
               <option value="Georgia, serif">Georgia</option>
               <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
               <option value="'Comic Sans MS', cursive">Comic Sans</option>
               <option value="'Courier New', monospace">Courier New</option>
-              <option value="'Poppins', sans-serif">Poppins (si está instalada)</option>
+              <option value="'Poppins', sans-serif">Poppins</option>
             </select>
           </label>
-          <label>
-            Tamaño
-            <input
-              type="number"
-              min={8}
-              max={72}
-              value={selectedTextStyle?.fontSize ?? 16}
-              onChange={event => changeTextStyle({ fontSize: Math.max(8, Math.min(72, Number(event.target.value) || 16)) })}
-            />
+          <div className="kuro-format-actions">
+            <button type="button" title="Negrita" aria-label="Negrita"
+              aria-pressed={activeBold} className={activeBold ? 'is-active' : ''}
+              disabled={!activeEditor}
+              onMouseDown={event => event.preventDefault()}
+              onClick={() => activeEditor?.chain().focus().toggleBold().run()}>
+              <strong>B</strong>
+            </button>
+            <button type="button" title="Cursiva" aria-label="Cursiva"
+              aria-pressed={activeItalic} className={activeItalic ? 'is-active' : ''}
+              disabled={!activeEditor}
+              onMouseDown={event => event.preventDefault()}
+              onClick={() => activeEditor?.chain().focus().toggleItalic().run()}>
+              <em>I</em>
+            </button>
+            <button type="button" title="Subrayado" aria-label="Subrayado"
+              aria-pressed={activeUnderline} className={activeUnderline ? 'is-active' : ''}
+              disabled={!activeEditor}
+              onMouseDown={event => event.preventDefault()}
+              onClick={() => activeEditor?.chain().focus().toggleUnderline().run()}>
+              <u>U</u>
+            </button>
+          </div>
+          <label className="kuro-format-color">
+            <span>Color</span>
+            <input type="color" defaultValue="#e87ab1" disabled={!activeEditor}
+              onChange={event => activeEditor?.chain().focus().setColor(event.target.value).run()} />
           </label>
-          <button
-            type="button"
-            className={selectedTextStyle?.bold ? 'is-active' : ''}
-            onClick={() => changeTextStyle({ bold: !(selectedTextStyle?.bold ?? false) })}
-            aria-pressed={selectedTextStyle?.bold ?? false}
-            title="Negrita en todo el cuadro"
-          >
-            <strong>B</strong> Negrita
-          </button>
-          <label>
-            Color
-            <input
-              type="color"
-              value={selectedTextStyle?.color ?? '#514750'}
-              onChange={event => changeTextStyle({ color: event.target.value })}
-            />
-          </label>
+          <span className="kuro-format-help">Selecciona palabras o activa un formato antes de escribir</span>
         </div>
       )}
 
@@ -959,14 +1154,37 @@ export default function BookEditor({
         </div>
       )}
 
-      <div className="kuro-editor-layout">
+      {bookLoaded && (
+        <div className="kuro-mobile-navigation" aria-label="Navegación del cuaderno">
+          <button type="button" className={mobilePagesOpen ? 'is-active' : ''}
+            onClick={() => setMobilePagesOpen(open => !open)}
+            aria-expanded={mobilePagesOpen} aria-controls="kuro-pages-panel">
+            <PanelsTopLeft size={18} /> Páginas
+          </button>
+          <div className="kuro-mobile-navigation-steps">
+            <button type="button" onClick={() => changePage(pageIndex - 1)}
+              disabled={pageIndex === 0} aria-label="Página anterior"><ChevronLeft size={19}/></button>
+            <span>Página {pageIndex + 1} / {pages.length}</span>
+            <button type="button" onClick={() => changePage(pageIndex + 1)}
+              disabled={pageIndex >= pages.length - 1} aria-label="Página siguiente"><ChevronRight size={19}/></button>
+          </div>
+          <button type="button" onClick={addPage} aria-label="Agregar página"><Plus size={19}/></button>
+        </div>
+      )}
+
+      <div className={'kuro-editor-layout' + (mobilePagesOpen ? ' kuro-pages-open' : '')}>
         {bookLoaded && (
+          <div id="kuro-pages-panel" className="kuro-mobile-pages-container">
           <PageThumbnails
             pages={pages}
             activeIndex={pageIndex}
             onSelect={changePage}
             onAdd={addPage}
+            onDelete={deletePage}
+            onDuplicate={duplicatePage}
+            onMove={movePage}
           />
+          </div>
         )}
 
       <div
@@ -1016,36 +1234,21 @@ export default function BookEditor({
                     }%`,
                     zIndex: index + 1
                   }}
-                  onPointerDown={event =>
-                    startInteraction(
-                      event,
-                      element,
-                      'move'
-                    )
-                  }
-                  onPointerMove={moveInteraction}
-                  onPointerUp={stopInteraction}
-                  onPointerCancel={stopInteraction}
+                  onPointerDown={() => {
+                    // Tocar el contenido solo selecciona: no inicia arrastre.
+                    setSelectedId(element.id);
+                  }}
                 >
                   {element.type === 'text' ? (
-                    <textarea
-                      value={element.content}
-                      style={{
-                        fontFamily: element.textStyle?.fontFamily ?? 'inherit',
-                        fontSize: `${element.textStyle?.fontSize ?? 16}px`,
-                        fontWeight: element.textStyle?.bold ? 700 : 400,
-                        color: element.textStyle?.color ?? '#514750'
-                      }}
-                      onPointerDown={event => {
-                        event.stopPropagation();
-                        setSelectedId(element.id);
-                      }}
-                      onChange={event =>
-                        updateElement(element.id, {
-                          content: event.target.value
-                        })
-                      }
-                      spellCheck
+                    <AutoGrowTextBox
+                      element={element}
+                      pageHeight={pageHeight}
+                      pageRef={pageRef}
+                      onChange={html => updateElement(element.id, { content: html })}
+                      onHeightChange={height => updateElement(element.id, { height })}
+                      onSelect={() => setSelectedId(element.id)}
+                      onEditorReady={registerEditor}
+                      onEditorStateChange={refreshToolbar}
                     />
                   ) : (
                     <img
@@ -1057,21 +1260,28 @@ export default function BookEditor({
 
                   {selectedId === element.id && (
                     <>
-                      <div className="kuro-element-handle">
-                        Arrastrar
-                      </div>
-
-                      <div
-                        className="kuro-resize-handle"
-                        title="Cambiar tamaño"
-                        onPointerDown={event =>
-                          startInteraction(
-                            event,
-                            element,
-                            'resize'
-                          )
-                        }
-                      />
+                        <div
+                          className="kuro-element-handle kuro-touch-move-handle"
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Mantener pulsado y mover elemento"
+                          title="Mover elemento"
+                          style={{ touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', pointerEvents: 'auto', zIndex: 30 }}
+                          onPointerDown={event => startInteraction(event, element, 'move')}
+                          onClick={event => { event.preventDefault(); event.stopPropagation(); }}
+                        >
+                          Mover
+                        </div>
+                        <div
+                          className="kuro-resize-handle kuro-touch-resize-handle"
+                          role="button"
+                          tabIndex={0}
+                          aria-label="Arrastrar para cambiar el tamaño"
+                          title="Cambiar tamaño"
+                          style={{ touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', pointerEvents: 'auto', zIndex: 30 }}
+                          onPointerDown={event => startInteraction(event, element, 'resize')}
+                          onClick={event => { event.preventDefault(); event.stopPropagation(); }}
+                        />
                     </>
                   )}
                 </div>

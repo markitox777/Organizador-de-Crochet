@@ -38,6 +38,8 @@ export type BookElement = {
     fontSize: number;
     color: string;
     bold: boolean;
+    italic?: boolean;
+    underline?: boolean;
   };
 };
 

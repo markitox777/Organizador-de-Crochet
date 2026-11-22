@@ -1,0 +1,1551 @@
+/* Kurotex: unión sin cambios de 12 archivos CSS originales. Mantiene orden de imports. */
+
+/* ===== INICIO bookEditor.css ===== */
+/* KUROTEX - herramientas de formato */
+.kuro-text-format {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #fff6fa;
+  border-bottom: 1px solid #f0dce5;
+}
+.kuro-text-format label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: #985f7e;
+}
+.kuro-text-format select,
+.kuro-text-format input[type="number"],
+.kuro-text-format button {
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid #eacbd9;
+  border-radius: 9px;
+  background: #fff;
+  color: #754e63;
+  font: inherit;
+}
+.kuro-text-format input[type="number"] { width: 70px; }
+.kuro-text-format input[type="color"] {
+  width: 44px;
+  height: 36px;
+  padding: 3px;
+  border: 1px solid #eacbd9;
+  border-radius: 9px;
+  background: white;
+}
+.kuro-text-format button { cursor: pointer; }
+.kuro-text-format button.is-active {
+  background: #ffe3ee;
+  border-color: #d981a9;
+}
+
+/* =====================================
+   KUROTEX - DISTRIBUCIÓN DEL EDITOR
+   ===================================== */
+
+.kuro-editor-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+}
+
+.kuro-editor-layout > .kuro-thumbnails {
+  flex: 0 0 180px;
+  width: 180px;
+}
+
+.kuro-editor-layout > .kuro-editor-workspace {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Adaptación para celulares */
+@media (max-width: 700px) {
+  .kuro-editor-layout {
+    flex-direction: column;
+  }
+
+  .kuro-editor-layout > .kuro-thumbnails {
+    width: 100%;
+    flex: none;
+  }
+
+  .kuro-editor-layout > .kuro-editor-workspace {
+    width: 100%;
+    flex: none;
+  }
+}
+
+/* KUROTEX - Textos sin barras de desplazamiento */
+
+.kuro-element textarea {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.kuro-element textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/* KUROTEX - Cuadros de texto inteligentes */
+
+.kuro-element textarea {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  resize: none;
+  box-sizing: border-box;
+  scrollbar-width: none;
+}
+
+.kuro-element textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/* Añadir al final de src/styles/bookEditor.css */
+.kuro-text-container,
+.kuro-rich-text-editor {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+.kuro-rich-text-editor {
+  position: relative;
+  overflow: auto;
+  scrollbar-width: none;
+}
+.kuro-rich-text-editor::-webkit-scrollbar { display: none; }
+.kuro-rich-text-content {
+  min-height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  outline: none;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: inherit;
+}
+.kuro-rich-text-content p { margin: 0 0 6px; }
+.kuro-rich-text-content p:last-child { margin-bottom: 0; }
+.kuro-inline-format {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  background: #fff3f8;
+  border: 1px solid #f0bcd4;
+  border-radius: 8px;
+  width: max-content;
+  max-width: 100%;
+  box-shadow: 0 2px 8px #ac638333;
+}
+.kuro-inline-format button { cursor: pointer; padding: 3px 7px; }
+.kuro-inline-format label { display: flex; align-items: center; gap: 3px; font-size: 11px; }
+.kuro-inline-format input[type="color"] { width: 25px; height: 23px; padding: 0; }
+
+
+/* Kurotex: una sola barra de formato, visible al editar */
+.kuro-text-container,
+.kuro-rich-text-editor {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+.kuro-rich-text-editor {
+  position: relative;
+  overflow: auto;
+  scrollbar-width: none;
+}
+.kuro-rich-text-editor::-webkit-scrollbar { display: none; }
+.kuro-rich-text-content {
+  min-height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  outline: none;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: inherit;
+}
+.kuro-rich-text-content p { margin: 0 0 6px; }
+.kuro-rich-text-content p:last-child { margin-bottom: 0; }
+.kuro-inline-format {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  background: #fff3f8;
+  border: 1px solid #f0bcd4;
+  border-radius: 8px;
+  width: max-content;
+  max-width: 100%;
+  box-shadow: 0 2px 8px #ac638333;
+}
+.kuro-rich-text-editor:focus-within .kuro-inline-format {
+  display: flex;
+}
+.kuro-inline-format button {
+  cursor: pointer;
+  padding: 3px 7px;
+  border: 1px solid #f0bcd4;
+  border-radius: 5px;
+  background: #fff;
+}
+.kuro-inline-format button.is-active {
+  background: #f8c8df;
+  border-color: #d97aa7;
+}
+.kuro-inline-format label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+}
+.kuro-inline-format input[type="color"] {
+  width: 25px;
+  height: 23px;
+  padding: 0;
+}
+
+
+/* KUROTEX - barra de formato superior contextual */
+.kuro-top-text-format {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fff2f8;
+  border-bottom: 1px solid #f2d6e3;
+  color: #92536f;
+}
+.kuro-format-caption {
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.kuro-format-font,
+.kuro-format-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+}
+.kuro-format-font select {
+  max-width: 175px;
+  border: 1px solid #edc4d8;
+  border-radius: 8px;
+  background: #fff;
+  padding: 7px 9px;
+  color: #754b60;
+}
+.kuro-format-actions { display: inline-flex; gap: 5px; }
+.kuro-format-actions button {
+  min-width: 33px;
+  height: 33px;
+  border: 1px solid #edc4d8;
+  border-radius: 8px;
+  background: white;
+  color: #754b60;
+  cursor: pointer;
+}
+.kuro-format-actions button.is-active {
+  background: #f8c8df;
+  border-color: #d97aa7;
+  color: #763554;
+}
+.kuro-format-actions button:disabled { opacity: .5; cursor: default; }
+.kuro-format-color input[type="color"] {
+  width: 31px;
+  height: 30px;
+  padding: 2px;
+  border: 1px solid #edc4d8;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+}
+.kuro-format-help { font-size: 11px; color: #ae8297; }
+/* La barra flotante anterior no debe aparecer dentro del papel. */
+.kuro-inline-format { display: none !important; }
+/* ===== FIN bookEditor.css ===== */
+
+/* ===== INICIO kurotexMobile.css ===== */
+/* KUROTEX - Adaptación móvil. Archivo completo adicional.
+   Importar después de bookEditor.css para conservar los estilos de escritorio. */
+.kuro-mobile-navigation { display: none; }
+.kuro-mobile-pages-container { display: contents; }
+
+@media (max-width: 700px) {
+  .kuro-editor, .kuro-editor-layout, .kuro-editor-workspace { min-width: 0; max-width: 100%; }
+  .kuro-editor-layout { display: flex; flex-direction: column; }
+  .kuro-mobile-pages-container { display: none; }
+  .kuro-pages-open > .kuro-mobile-pages-container { display: block; width: 100%; }
+  .kuro-pages-open .kuro-thumbnails { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .kuro-pages-open .kuro-thumbnails-list { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px 12px; -webkit-overflow-scrolling: touch; }
+  .kuro-pages-open .kuro-thumbnail { flex: 0 0 105px; width: 105px; min-width: 105px; }
+  .kuro-pages-open .kuro-thumbnail-paper { max-width: 100%; }
+  .kuro-pages-open .kuro-thumbnail-add { width: calc(100% - 24px); margin: 8px 12px 12px; }
+
+  .kuro-mobile-navigation {
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    padding: 8px 10px; background: #fff6fa; border-bottom: 1px solid #f0dce5;
+    position: relative; z-index: 2;
+  }
+  .kuro-mobile-navigation button {
+    min-height: 40px; min-width: 40px; display: inline-flex; align-items: center;
+    justify-content: center; gap: 5px; padding: 6px 9px; border: 1px solid #eacbd9;
+    border-radius: 10px; background: white; color: #985f7e; font-size: 12px;
+  }
+  .kuro-mobile-navigation button.is-active { background: #ffe2ef; }
+  .kuro-mobile-navigation button:disabled { opacity: .35; }
+  .kuro-mobile-navigation-steps { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .kuro-mobile-navigation-steps span { font-size: 12px; color: #8f5975; }
+
+  .kuro-editor-toolbar { display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .kuro-editor-toolbar::-webkit-scrollbar { display: none; }
+  .kuro-editor-toolbar .kuro-tool-group { display: flex; flex: 0 0 auto; flex-wrap: nowrap; }
+  .kuro-editor-toolbar button, .kuro-editor-toolbar .kuro-tool-button { flex: 0 0 auto; white-space: nowrap; }
+  .kuro-top-text-format { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 8px; padding: 8px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .kuro-top-text-format > * { flex-shrink: 0; }
+  .kuro-format-help { display: none; }
+  .kuro-editor-layout > .kuro-editor-workspace { width: 100%; min-width: 0; margin: 0; }
+  .kuro-page-surround { max-width: 100%; box-sizing: border-box; }
+  .kuro-paper { max-width: 100%; }
+  .kuro-element-handle, .kuro-resize-handle { touch-action: none; }
+  .kuro-rich-text-content { -webkit-user-select: text; user-select: text; }
+}
+
+/* KUROTEX: barra de herramientas compacta para celular. */
+.kuro-mobile-tools { display: none; }
+
+@media (max-width: 700px) {
+  .kuro-editor > .kuro-editor-toolbar { display: none; }
+  .kuro-mobile-tools {
+    display: block; position: relative; z-index: 5;
+    background: #fff7fb; border-bottom: 1px solid #efd7e4;
+    padding: 7px 9px;
+  }
+  .kuro-mobile-tools-main {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px;
+  }
+  .kuro-mobile-tools-main > button,
+  .kuro-mobile-tools-main > .kuro-mobile-image-button {
+    min-width: 0; min-height: 48px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; gap: 3px;
+    padding: 6px 3px; box-sizing: border-box;
+    border: 1px solid #f0d5e2; border-radius: 11px;
+    background: #fff; color: #995a7d;
+    font: inherit; font-size: 11px; line-height: 1.2;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .kuro-mobile-tools-main > button.is-active { background: #ffe5f1; border-color: #e7accb; }
+  .kuro-mobile-tools-main > button:disabled,
+  .kuro-mobile-tools-main > .kuro-mobile-image-button:has(input:disabled) { opacity: .45; }
+  .kuro-mobile-tools-more {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px;
+    padding: 9px 2px 3px;
+  }
+  .kuro-mobile-tools-more > button {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: 40px; padding: 7px 8px; border: 1px solid #f0d5e2;
+    border-radius: 10px; background: #fff; color: #995a7d;
+    font: inherit; font-size: 12px; cursor: pointer;
+  }
+  .kuro-mobile-tools-more > button:disabled { opacity: .4; }
+  .kuro-mobile-tools-more > .kuro-mobile-danger { color: #a34365; }
+  .kuro-top-text-format {
+    min-height: 44px; box-sizing: border-box;
+    padding: 6px 9px; gap: 7px;
+  }
+  .kuro-top-text-format .kuro-format-caption { display: none; }
+  .kuro-top-text-format .kuro-format-font,
+  .kuro-top-text-format .kuro-format-color { gap: 4px; }
+  .kuro-top-text-format button { min-width: 34px; min-height: 34px; }
+}
+/* ===== FIN kurotexMobile.css ===== */
+
+/* ===== INICIO kurotexAutoAltura.css ===== */
+/* Kurotex: ajuste de altura del texto, incluido Android/iOS. */
+.kuro-auto-grow-text { overflow: hidden; }
+.kuro-auto-grow-text .kuro-rich-text-editor {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.kuro-auto-grow-text .kuro-rich-text-content {
+  min-height: 0 !important;
+  height: auto !important;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+@media (max-width: 700px) {
+  .kuro-auto-grow-text .kuro-rich-text-content { font-size: inherit; }
+  .kuro-element .kuro-resize-handle { touch-action: none; }
+}
+/* ===== FIN kurotexAutoAltura.css ===== */
+
+/* ===== INICIO kurotexTouch.css ===== */
+/* Kurotex - controles tactiles. No modifica el diseno de escritorio. */
+.kuro-touch-move-handle,
+.kuro-touch-resize-handle {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: grab;
+}
+.kuro-touch-move-handle:active,
+.kuro-touch-resize-handle:active { cursor: grabbing; }
+@media (max-width: 700px) {
+  .kuro-element.is-selected { overflow: visible; }
+  .kuro-element .kuro-touch-move-handle {
+    position: absolute;
+    top: -36px;
+    left: 0;
+    z-index: 20;
+    min-width: 76px;
+    min-height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 12px;
+    border: 1px solid #d77da7;
+    border-radius: 12px;
+    background: #ffe1ef;
+    color: #874766;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 7px #98527333;
+    box-sizing: border-box;
+  }
+  .kuro-element .kuro-touch-resize-handle {
+    position: absolute;
+    right: -10px;
+    bottom: -10px;
+    z-index: 21;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: #dc83ad;
+    box-shadow: 0 1px 6px #92507055;
+    box-sizing: border-box;
+  }
+  .kuro-element .kuro-rich-text-content {
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: pan-y;
+  }
+}
+/* ===== FIN kurotexTouch.css ===== */
+
+/* ===== INICIO kurotexPinkMinimal.css ===== */
+/* KUROTEX · PINK MINIMAL
+   Capa visual adicional. Importar DESPUÉS de kurotexTouch.css.
+   No cambia coordenadas, tamaño lógico del papel, drag, resize ni contenido Tiptap.
+*/
+.kuro-editor {
+  --kuro-pink-bg: #fff9fc;
+  --kuro-pink-surface: #fffdfd;
+  --kuro-pink-soft: #fde7f1;
+  --kuro-pink-accent: #f8cfe0;
+  --kuro-pink-ink: #86506f;
+  --kuro-pink-muted: #a27a91;
+  --kuro-pink-line: #efd8e4;
+  --kuro-pink-shadow: 0 10px 32px rgba(132, 74, 108, .09);
+  color: var(--kuro-pink-ink);
+  background: var(--kuro-pink-bg);
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  border: 1px solid var(--kuro-pink-line);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.kuro-editor *, .kuro-editor *::before, .kuro-editor *::after { box-sizing: border-box; }
+.kuro-editor button, .kuro-editor select, .kuro-editor input { font-family: inherit; }
+.kuro-editor button, .kuro-editor .kuro-tool-button {
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.kuro-editor button:focus-visible, .kuro-editor select:focus-visible,
+.kuro-editor .kuro-tool-button:focus-within {
+  outline: 2px solid #d88eaf; outline-offset: 2px;
+}
+.kuro-editor-top {
+  background: linear-gradient(115deg, #fffdfd 0%, #fff2f8 100%);
+  border-bottom: 1px solid var(--kuro-pink-line);
+  padding: 15px 20px;
+}
+.kuro-editor-heading { display: flex; align-items: center; gap: 10px; }
+.kuro-editor-heading > svg { color: #b86d96; }
+.kuro-editor-heading h3 {
+  margin: 0; color: #804461; font-family: 'Quicksand', 'Poppins', sans-serif;
+  font-weight: 700; letter-spacing: -.025em;
+}
+.kuro-editor-heading p { margin: 2px 0 0; color: var(--kuro-pink-muted); font-size: 12px; }
+.kuro-editor-status {
+  color: #96637f; background: #fff; border: 1px solid #f1dce7;
+  border-radius: 999px; padding: 6px 11px; font-size: 11px; white-space: nowrap;
+}
+.kuro-editor-toolbar {
+  background: #fffdfd; border-bottom: 1px solid var(--kuro-pink-line);
+  padding: 10px 14px; gap: 8px;
+}
+.kuro-editor-toolbar button, .kuro-editor-toolbar .kuro-tool-button {
+  border: 1px solid transparent; background: transparent; color: #935b7c;
+  border-radius: 12px; min-height: 39px; padding: 8px 10px;
+  cursor: pointer;
+}
+.kuro-editor-toolbar button:hover:not(:disabled),
+.kuro-editor-toolbar .kuro-tool-button:hover { background: #fff0f7; border-color: #f1d8e6; }
+.kuro-editor-toolbar button:disabled { opacity: .4; cursor: default; }
+.kuro-editor-toolbar .kuro-tool-active,
+.kuro-editor-toolbar .kuro-tool-active:hover { background: #fde7f1; border-color: #edb9d2; }
+.kuro-tool-divider { background: #eedce6; }
+.kuro-top-text-format {
+  background: #fff7fb; border-bottom: 1px solid var(--kuro-pink-line);
+  color: #915b78; padding: 9px 15px;
+}
+.kuro-format-caption { color: #8c5171; }
+.kuro-format-font select, .kuro-format-actions button, .kuro-format-color input[type='color'] {
+  background: #fff; border: 1px solid #ecd4e1; border-radius: 10px;
+  color: #83516d;
+}
+.kuro-format-actions button.is-active { background: #f8cfe0; border-color: #dc9bbb; }
+.kuro-editor-layout { background: #fff8fc; }
+.kuro-mobile-pages-container, .kuro-thumbnails {
+  background: #fffdfd; border-color: var(--kuro-pink-line);
+}
+.kuro-thumbnails { box-shadow: 2px 0 12px rgba(141, 89, 119, .035); }
+.kuro-thumbnails button { border-radius: 11px; }
+.kuro-thumbnail { border-radius: 13px; }
+.kuro-thumbnail.is-active, .kuro-thumbnail.active,
+.kuro-thumbnail[aria-current='page'] { border-color: #d68faf; background: #fff0f7; }
+.kuro-editor-workspace {
+  background: radial-gradient(circle at 50% 0%, #fffafc 0%, #f8eaf2 100%);
+}
+.kuro-page-surround { padding: 22px 12px; }
+.kuro-paper {
+  /* Mantener dimensiones y aspect-ratio del editor. */
+  border: 1px solid rgba(219, 171, 194, .5);
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(115, 66, 92, .07), 0 18px 42px rgba(115, 66, 92, .12);
+}
+.kuro-page-label { color: #a27790; font-size: 12px; }
+.kuro-editor-footer {
+  background: #fffdfd; border-top: 1px solid var(--kuro-pink-line);
+  color: #915b78;
+}
+.kuro-editor-footer button, .kuro-mobile-navigation button {
+  background: #fff; border: 1px solid #ecd5e2;
+  color: #935c7b; border-radius: 11px;
+}
+.kuro-editor-footer button:hover:not(:disabled),
+.kuro-mobile-navigation button:hover:not(:disabled) { background: #fff0f7; }
+.kuro-new-page { background: #fde7f1 !important; }
+.kuro-paper-panel {
+  background: #fffafd; color: #85536f;
+  border-color: var(--kuro-pink-line);
+  box-shadow: var(--kuro-pink-shadow);
+}
+.kuro-paper-panel h4, .kuro-paper-panel h5 { color: #824a69; }
+.kuro-paper-option, .kuro-paper-select, .kuro-apply-all {
+  border-radius: 12px; border-color: #edd3e1;
+}
+.kuro-paper-option.active { background: #fff0f7; border-color: #d89abb; }
+.kuro-element.is-selected { outline-color: #df91b6; }
+/* No cambiar touch-action ni pointer-events de los controles táctiles. */
+.kuro-element-handle, .kuro-resize-handle { background-color: #f8cfe0; color: #7e4664; }
+@media (max-width: 700px) {
+  .kuro-editor { border-radius: 14px; }
+  .kuro-editor-top { padding: 10px 12px; }
+  .kuro-editor-heading h3 { font-size: 16px; }
+  .kuro-editor-heading p { font-size: 11px; }
+  .kuro-editor-status { padding: 5px 8px; font-size: 10px; }
+  .kuro-mobile-tools { background: #fffdfd; border-bottom: 1px solid #efd8e4; padding: 8px 10px; }
+  .kuro-mobile-tools-main { gap: 8px; }
+  .kuro-mobile-tools-main > button,
+  .kuro-mobile-tools-main > .kuro-mobile-image-button {
+    background: #fff; border: 1px solid #f0d9e6; border-radius: 13px;
+    color: #945b7c; min-height: 49px;
+  }
+  .kuro-mobile-tools-main > button.is-active { background: #fde7f1; border-color: #e9b2cf; }
+  .kuro-mobile-tools-more { background: #fffdfd; }
+  .kuro-mobile-tools-more > button {
+    background: #fff9fc; border: 1px solid #efd9e5;
+    border-radius: 11px; color: #945b7c;
+  }
+  .kuro-top-text-format { padding: 7px 9px; }
+  .kuro-mobile-navigation { background: #fff8fc; border-bottom: 1px solid #efd8e4; padding: 7px 9px; }
+  .kuro-mobile-navigation button.is-active { background: #fde7f1; }
+  .kuro-mobile-navigation-steps span { color: #8d5875; }
+  .kuro-page-surround { padding: 15px 8px; }
+  .kuro-paper { border-radius: 5px; box-shadow: 0 4px 16px rgba(115, 66, 92, .12); }
+  .kuro-editor-footer { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kuro-editor button, .kuro-editor .kuro-tool-button { transition: none; }
+}
+
+/* ===== PINK MINIMAL V2 · rediseño perceptible =====
+   Se mantiene la estructura funcional y la geometría de los elementos.
+   Estas reglas se colocan al final para sobrescribir el tema anterior. */
+.kuro-editor {
+  border-radius: 22px;
+  background: #fffafd;
+  border: 1px solid #efd8e6;
+  box-shadow: 0 16px 45px rgba(129, 71, 106, .10);
+}
+.kuro-editor-top {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fffdfd;
+  padding: 16px 24px;
+}
+.kuro-editor-heading h3 { font-size: 19px; color: #824762; }
+.kuro-editor-heading > svg { padding: 6px; width: 39px; height: 39px; background: #fff0f7; border-radius: 12px; }
+.kuro-editor-status { background: #fff2f8; border-color: #f1d8e5; padding: 7px 13px; }
+.kuro-editor-toolbar {
+  padding: 12px 18px;
+  gap: 14px;
+  background: #fff;
+}
+.kuro-editor-toolbar .kuro-tool-group { gap: 6px; }
+.kuro-editor-toolbar button, .kuro-editor-toolbar .kuro-tool-button {
+  background: #fff7fb;
+  border: 1px solid #f3dfeb;
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: #8e5875;
+}
+.kuro-editor-toolbar button:hover:not(:disabled), .kuro-editor-toolbar .kuro-tool-button:hover { background: #ffeaf4; border-color: #e8b8d1; }
+.kuro-editor-layout { background: #f9f0f6; }
+.kuro-editor-workspace {
+  background: #f6edf3;
+  background-image: radial-gradient(#e7d5e0 0.8px, transparent 0.8px);
+  background-size: 19px 19px;
+}
+.kuro-page-surround { padding: 32px 20px 25px; }
+.kuro-paper { border-radius: 9px; box-shadow: 0 8px 20px rgba(98, 55, 78, .09), 0 28px 60px rgba(98, 55, 78, .12); }
+.kuro-page-label { margin-top: 13px; color: #9d718a; }
+.kuro-thumbnails.kuro-pink-thumbnails {
+  background: #fffbfd;
+  border-right: 1px solid #efdbe7;
+  padding: 14px 10px;
+  box-shadow: none;
+}
+.kuro-pink-thumbnails .kuro-thumbnails-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 14px;
+}
+.kuro-pink-pages-heading { display: flex; flex-direction: column; gap: 3px; }
+.kuro-pink-pages-heading h4 { margin: 0; color: #884e6e; font-size: 13px; }
+.kuro-pink-pages-subtitle { color: #ba93a9; font-size: 10px; }
+.kuro-pink-pages-count { border-radius: 999px; background: #fce6f1; color: #975e7c; padding: 4px 9px; font-size: 11px; }
+.kuro-pink-thumbnails .kuro-thumbnails-list { display: flex; flex-direction: column; gap: 13px; padding: 0 3px 8px; }
+.kuro-pink-thumbnails .kuro-thumbnail {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  width: 100%; padding: 10px 8px 9px;
+  border: 1px solid transparent; border-radius: 15px;
+  background: transparent; color: #9b6b85;
+  box-shadow: none;
+}
+.kuro-pink-thumbnails .kuro-thumbnail.active {
+  background: #ffeaf4;
+  border-color: #e6a8c8;
+  box-shadow: inset 0 0 0 1px #f2c8dc;
+}
+.kuro-pink-thumbnails .kuro-thumbnail-paper {
+  overflow: hidden;
+  border: 1px solid #ecd9e3;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 3px 9px rgba(118, 67, 98, .10);
+}
+.kuro-pink-thumbnails .kuro-thumbnail-number { font-size: 11px; font-weight: 600; }
+.kuro-pink-thumbnails .kuro-thumbnail-add {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: calc(100% - 6px); margin: 12px 3px 0;
+  padding: 11px 8px; background: #fff5fa; color: #a55f84;
+  border: 1px dashed #e8acc9; border-radius: 12px;
+}
+.kuro-pink-thumbnails .kuro-thumbnail-add:hover { background: #ffe8f3; }
+.kuro-editor-footer { padding: 12px 18px; }
+.kuro-editor-footer button { min-height: 38px; }
+@media (max-width: 700px) {
+  .kuro-editor { border-radius: 16px; }
+  .kuro-editor-top { min-height: 0; padding: 10px 12px; }
+  .kuro-editor-heading { gap: 8px; }
+  .kuro-editor-heading > svg { width: 31px; height: 31px; padding: 5px; border-radius: 9px; }
+  .kuro-editor-heading h3 { font-size: 15px; }
+  .kuro-editor-heading p { font-size: 10px; }
+  .kuro-editor-status { font-size: 10px; padding: 5px 7px; }
+  .kuro-mobile-tools { padding: 7px 9px; background: #fff; }
+  .kuro-mobile-tools-main { gap: 6px; }
+  .kuro-mobile-tools-main > button,
+  .kuro-mobile-tools-main > .kuro-mobile-image-button {
+    min-height: 43px; padding: 5px 2px;
+    border-radius: 11px; background: #fff4fa; border-color: #f1dce8;
+    font-size: 10px; gap: 2px;
+  }
+  .kuro-mobile-tools-main svg { width: 18px; height: 18px; }
+  .kuro-mobile-navigation { padding: 5px 8px; gap: 4px; background: #fffdfd; }
+  .kuro-mobile-navigation button { min-width: 32px; min-height: 34px; padding: 5px 7px; font-size: 11px; }
+  .kuro-mobile-navigation-steps { gap: 2px; }
+  .kuro-mobile-navigation-steps span { font-size: 11px; }
+  .kuro-editor-workspace { background-size: 15px 15px; }
+  .kuro-page-surround { padding: 12px 5px 15px; }
+  .kuro-pink-thumbnails .kuro-thumbnails-header { padding: 6px 10px; }
+  .kuro-pink-thumbnails .kuro-thumbnails-list { flex-direction: row; overflow-x: auto; gap: 9px; padding: 7px 9px; }
+  .kuro-pink-thumbnails .kuro-thumbnail { flex: 0 0 105px; width: 105px; padding: 7px 5px; }
+  .kuro-pink-thumbnails .kuro-thumbnail-add { width: calc(100% - 18px); margin: 8px 9px; }
+}
+/* ===== FIN kurotexPinkMinimal.css ===== */
+
+/* ===== INICIO kurotexEliminarPaginas.css ===== */
+/* KUROTEX - controles de eliminación de páginas (Pink Minimal). */
+.kuro-page-thumbnail-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding-bottom: 10px;
+}
+.kuro-page-thumbnail-entry > .kuro-thumbnail {
+  flex: none;
+}
+.kuro-page-delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid #f0cfdf;
+  border-radius: 10px;
+  background: #fff9fc;
+  color: #ac6488;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.kuro-page-delete-button:hover:not(:disabled) {
+  background: #ffe8f1;
+  border-color: #e5a9c5;
+}
+.kuro-page-delete-button:focus-visible {
+  outline: 2px solid #bd77a0;
+  outline-offset: 2px;
+}
+.kuro-page-delete-button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+@media (max-width: 700px) {
+  .kuro-pages-open .kuro-page-thumbnail-entry {
+    flex: 0 0 105px;
+    width: 105px;
+    min-width: 105px;
+  }
+  .kuro-pages-open .kuro-page-thumbnail-entry > .kuro-thumbnail {
+    width: 100%;
+    min-width: 0;
+  }
+  .kuro-page-delete-button {
+    min-height: 36px;
+  }
+}
+/* ===== FIN kurotexEliminarPaginas.css ===== */
+
+/* ===== INICIO kurotexDuplicarPaginas.css ===== */
+/* KUROTEX - Duplicar páginas. Complementa kurotexEliminarPaginas.css. */
+.kuro-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.kuro-page-actions .kuro-page-delete-button,
+.kuro-page-duplicate-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 5px 8px;
+  border: 1px solid #f0cfdf;
+  border-radius: 10px;
+  background: #fff9fc;
+  color: #ac6488;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.kuro-page-duplicate-button:hover { background: #ffe8f1; border-color: #e5a9c5; }
+.kuro-page-duplicate-button:focus-visible { outline: 2px solid #bd77a0; outline-offset: 2px; }
+@media (max-width: 700px) {
+  .kuro-page-actions { flex-direction: column; gap: 5px; }
+  .kuro-page-actions .kuro-page-delete-button,
+  .kuro-page-duplicate-button { min-height: 36px; width: 100%; }
+}
+/* ===== FIN kurotexDuplicarPaginas.css ===== */
+
+/* ===== INICIO kurotexReordenarPaginas.css ===== */
+/* Kurotex Pink Minimal: controles de reordenamiento de páginas */
+.kuro-page-reorder-actions {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 7px;
+  margin-bottom: 6px;
+}
+.kuro-page-move-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #efd2e1;
+  border-radius: 10px;
+  background: #fff5fa;
+  color: #955c7c;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.kuro-page-move-button:not(:disabled):hover {
+  background: #ffe5f1;
+  border-color: #e8a9ca;
+}
+.kuro-page-move-button:focus-visible {
+  outline: 2px solid #ca7fa8;
+  outline-offset: 2px;
+}
+.kuro-page-move-button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+@media (max-width: 768px) {
+  .kuro-page-move-button { min-height: 42px; font-size: 13px; }
+}
+/* ===== FIN kurotexReordenarPaginas.css ===== */
+
+/* ===== INICIO kurotexToolbarPinkMinimal3.css ===== */
+/* KUROTEX — Pink Minimal 3.0 · Barras de herramientas
+   Capa visual: no modifica geometría de la hoja, Tiptap ni eventos táctiles.
+   Importar al final de los estilos del editor. */
+.kuro-editor {
+  --kuro-toolbar-ink: #875371;
+  --kuro-toolbar-pink: #f9e5f0;
+  --kuro-toolbar-border: #efd7e4;
+  --kuro-toolbar-hover: #ffedf6;
+  --kuro-toolbar-shadow: 0 4px 18px rgba(132, 75, 105, .065);
+}
+.kuro-editor .kuro-editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 11px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, #fffefd 0%, #fff8fc 100%);
+  border-bottom: 1px solid var(--kuro-toolbar-border);
+  box-shadow: var(--kuro-toolbar-shadow);
+}
+.kuro-editor .kuro-editor-toolbar .kuro-tool-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.kuro-editor .kuro-editor-toolbar button,
+.kuro-editor .kuro-editor-toolbar .kuro-tool-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 43px;
+  padding: 9px 13px;
+  border: 1px solid #efdbe6;
+  border-radius: 13px;
+  background: #fff;
+  color: var(--kuro-toolbar-ink);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 2px 7px rgba(136, 79, 110, .035);
+  cursor: pointer;
+}
+.kuro-editor .kuro-editor-toolbar button svg,
+.kuro-editor .kuro-editor-toolbar .kuro-tool-button svg {
+  flex-shrink: 0;
+  color: #b56c95;
+}
+.kuro-editor .kuro-editor-toolbar button:hover:not(:disabled),
+.kuro-editor .kuro-editor-toolbar .kuro-tool-button:hover {
+  background: var(--kuro-toolbar-hover);
+  border-color: #e7b9d0;
+  box-shadow: 0 3px 11px rgba(161, 87, 127, .09);
+}
+.kuro-editor .kuro-editor-toolbar button:active:not(:disabled),
+.kuro-editor .kuro-editor-toolbar .kuro-tool-button:active {
+  transform: translateY(1px);
+}
+.kuro-editor .kuro-editor-toolbar button:disabled,
+.kuro-editor .kuro-editor-toolbar .kuro-tool-button:has(input:disabled) {
+  opacity: .43;
+  cursor: not-allowed;
+}
+.kuro-editor .kuro-editor-toolbar .kuro-tool-active,
+.kuro-editor .kuro-editor-toolbar .kuro-tool-active:hover {
+  background: var(--kuro-toolbar-pink);
+  border-color: #e4a8c7;
+  color: #874364;
+}
+.kuro-editor .kuro-editor-toolbar .kuro-tool-divider {
+  width: 1px;
+  height: 30px;
+  margin: 0 2px;
+  background: #efdce6;
+}
+.kuro-editor .kuro-editor-toolbar .kuro-delete-button {
+  background: #fff8fa;
+  border-color: #f1d9e1;
+  color: #a65070;
+}
+.kuro-editor .kuro-editor-toolbar .kuro-delete-button svg { color: #bc6582; }
+.kuro-editor .kuro-editor-toolbar .kuro-delete-button:hover:not(:disabled) {
+  background: #ffedf2;
+  border-color: #e7b5c6;
+}
+/* Formato de texto: controles existentes, nueva apariencia. */
+.kuro-editor .kuro-top-text-format {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 17px;
+  background: #fff7fb;
+  border-bottom: 1px solid var(--kuro-toolbar-border);
+}
+.kuro-editor .kuro-format-caption {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9c6684;
+}
+.kuro-editor .kuro-format-font select {
+  min-height: 36px;
+  border-radius: 11px;
+  background: white;
+  border-color: #ead1df;
+}
+.kuro-editor .kuro-format-actions { display: inline-flex; align-items: center; gap: 5px; }
+.kuro-editor .kuro-format-actions button {
+  min-width: 37px;
+  min-height: 37px;
+  border-radius: 11px;
+  background: white;
+  border: 1px solid #edd6e2;
+  color: #935878;
+}
+.kuro-editor .kuro-format-actions button.is-active {
+  background: #f8d9e9;
+  border-color: #dd9fbe;
+}
+.kuro-editor .kuro-format-color input[type='color'] {
+  width: 39px;
+  min-height: 36px;
+  padding: 3px;
+  border-radius: 10px;
+}
+@media (max-width: 700px) {
+  /* Conserva la barra de escritorio oculta, tal como en kurotexMobile.css. */
+  .kuro-editor > .kuro-editor-toolbar { display: none; }
+  .kuro-editor .kuro-mobile-tools {
+    padding: 9px 10px;
+    background: linear-gradient(180deg, #fffefd 0%, #fff8fc 100%);
+    border-bottom: 1px solid var(--kuro-toolbar-border);
+    box-shadow: var(--kuro-toolbar-shadow);
+  }
+  .kuro-editor .kuro-mobile-tools-main { gap: 8px; }
+  .kuro-editor .kuro-mobile-tools-main > button,
+  .kuro-editor .kuro-mobile-tools-main > .kuro-mobile-image-button {
+    min-width: 0;
+    min-height: 58px;
+    padding: 8px 3px;
+    gap: 5px;
+    border-radius: 15px;
+    border: 1px solid #efd8e4;
+    background: white;
+    color: #925777;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(145, 85, 115, .045);
+  }
+  .kuro-editor .kuro-mobile-tools-main svg { width: 21px; height: 21px; color: #b66f96; }
+  .kuro-editor .kuro-mobile-tools-main > button.is-active {
+    background: #fae1ee;
+    border-color: #e6abc8;
+  }
+  .kuro-editor .kuro-mobile-tools-main > button:active:not(:disabled),
+  .kuro-editor .kuro-mobile-tools-main > .kuro-mobile-image-button:active {
+    background: #ffeaf4;
+  }
+  .kuro-editor .kuro-mobile-tools-more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 12px 2px 3px;
+    background: transparent;
+  }
+  .kuro-editor .kuro-mobile-tools-more > button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid #efd8e4;
+    background: #fff;
+    color: #945b7c;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .kuro-editor .kuro-mobile-tools-more > button:hover:not(:disabled) { background: #fff0f7; }
+  .kuro-editor .kuro-mobile-tools-more > .kuro-mobile-danger {
+    background: #fff6f9;
+    color: #aa4e70;
+  }
+  .kuro-editor .kuro-top-text-format {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 8px 10px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .kuro-editor .kuro-top-text-format::-webkit-scrollbar { display: none; }
+  .kuro-editor .kuro-top-text-format > * { flex-shrink: 0; }
+  .kuro-editor .kuro-format-caption,
+  .kuro-editor .kuro-format-help { display: none; }
+}
+@media (max-width: 360px) {
+  .kuro-editor .kuro-mobile-tools { padding-inline: 6px; }
+  .kuro-editor .kuro-mobile-tools-main { gap: 5px; }
+  .kuro-editor .kuro-mobile-tools-main > button,
+  .kuro-editor .kuro-mobile-tools-main > .kuro-mobile-image-button { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kuro-editor .kuro-editor-toolbar button:active:not(:disabled) { transform: none; }
+}
+/* ===== FIN kurotexToolbarPinkMinimal3.css ===== */
+
+/* ===== INICIO kurotexWorkspacePinkMinimal3.css ===== */
+/* KUROTEX · Pink Minimal 3.0 — Etapa 2: espacio de trabajo y papel.
+   Capa visual independiente. Importar al FINAL de los CSS del editor.
+   No modifica coordenadas, dimensiones lógicas, eventos táctiles ni Tiptap. */
+
+.kuro-editor {
+  --kuro-workspace-bg: #f9f1f6;
+  --kuro-workspace-dot: rgba(182, 137, 164, .17);
+  --kuro-page-edge: #ead5e0;
+  --kuro-page-shadow: 0 8px 24px rgba(107, 65, 89, .09), 0 25px 55px rgba(107, 65, 89, .11);
+}
+
+/* Área de edición: un fondo discreto para destacar la hoja. */
+.kuro-editor .kuro-editor-layout {
+  background: var(--kuro-workspace-bg);
+  min-width: 0;
+}
+.kuro-editor .kuro-editor-workspace {
+  min-width: 0;
+  background-color: var(--kuro-workspace-bg);
+  background-image: radial-gradient(circle, var(--kuro-workspace-dot) .75px, transparent .85px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+}
+.kuro-editor .kuro-page-surround {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  padding: 30px 20px 22px;
+}
+
+/* Conserva el aspect-ratio, tamaño y posicionamiento que controla React. */
+.kuro-editor .kuro-paper {
+  border: 1px solid var(--kuro-page-edge);
+  border-radius: 9px;
+  box-shadow: var(--kuro-page-shadow);
+  /* No sobrescribir width, height, position, overflow, transform o aspect-ratio. */
+}
+.kuro-editor .kuro-page-label {
+  color: #946c84;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .015em;
+  text-align: center;
+  margin-top: 14px;
+}
+
+/* Pie y navegación, manteniendo todos los botones existentes. */
+.kuro-editor .kuro-editor-footer {
+  background: #fffdfd;
+  border-top: 1px solid #f0dce6;
+  padding: 12px 18px;
+}
+.kuro-editor .kuro-page-navigation {
+  gap: 9px;
+}
+.kuro-editor .kuro-page-navigation > span {
+  color: #93647f;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.kuro-editor .kuro-editor-footer button {
+  border-radius: 12px;
+  border: 1px solid #ecd5e2;
+  color: #925b7b;
+  background: #fff;
+  min-height: 38px;
+}
+.kuro-editor .kuro-editor-footer button:hover:not(:disabled) {
+  background: #fff0f7;
+  border-color: #e9bcd2;
+}
+.kuro-editor .kuro-editor-footer .kuro-new-page {
+  background: #fce6f1 !important;
+  border-color: #edc4d9;
+  color: #884f70;
+  font-weight: 600;
+}
+.kuro-editor .kuro-editor-footer button:disabled { opacity: .42; cursor: not-allowed; }
+
+/* Indicadores y botones de navegación móvil. */
+@media (max-width: 700px) {
+  .kuro-editor .kuro-editor-workspace {
+    background-size: 17px 17px;
+    background-position: 8px 8px;
+  }
+  .kuro-editor .kuro-page-surround {
+    padding: 14px 6px 16px;
+  }
+  .kuro-editor .kuro-paper {
+    border-radius: 5px;
+    box-shadow: 0 5px 19px rgba(107, 65, 89, .13);
+  }
+  .kuro-editor .kuro-page-label {
+    margin-top: 10px;
+    font-size: 11px;
+  }
+  .kuro-editor .kuro-mobile-navigation {
+    background: #fffafd;
+    border-bottom: 1px solid #f0dce6;
+  }
+  .kuro-editor .kuro-mobile-navigation button {
+    border: 1px solid #eed6e3;
+    border-radius: 11px;
+    background: #fff;
+    color: #945d7c;
+  }
+  .kuro-editor .kuro-mobile-navigation button.is-active {
+    background: #fce6f1;
+    border-color: #e8b9d0;
+  }
+  .kuro-editor .kuro-mobile-navigation-steps span {
+    color: #926780;
+    font-variant-numeric: tabular-nums;
+  }
+  .kuro-editor .kuro-editor-footer {
+    padding: 10px 11px max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kuro-editor .kuro-editor-footer button { transition: none; }
+}
+/* ===== FIN kurotexWorkspacePinkMinimal3.css ===== */
+
+/* ===== INICIO kurotexThumbnailsPinkMinimal3.css ===== */
+/* KUROTEX · Pink Minimal 3.0 · Etapa 3: miniaturas de páginas
+   Importar al final de los CSS de BookEditor.tsx.
+   Solo presentación: no modifica las acciones ni el contenido guardado. */
+
+.kuro-editor .kuro-pink-thumbnails {
+  background: #fffbfd;
+  border-color: #f0dce8;
+  box-shadow: 3px 0 20px rgba(128, 72, 104, .035);
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnails-header {
+  padding: 8px 8px 15px;
+  border-bottom: 1px solid #f5e6ee;
+  margin-bottom: 12px;
+}
+.kuro-editor .kuro-pink-pages-heading h4 {
+  color: #874c6d;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.kuro-editor .kuro-pink-pages-subtitle { color: #b78da5; font-size: 11px; }
+.kuro-editor .kuro-pink-pages-count {
+  background: #fce5f1;
+  color: #945c7d;
+  border: 1px solid #f2d5e5;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 700;
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnails-list {
+  gap: 14px;
+  padding: 2px 3px 12px;
+}
+.kuro-editor .kuro-page-thumbnail-entry {
+  min-width: 0;
+  padding: 9px;
+  background: #fff;
+  border: 1px solid #f0dce8;
+  border-radius: 17px;
+  box-shadow: 0 5px 15px rgba(130, 78, 108, .055);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.kuro-editor .kuro-page-thumbnail-entry:has(.kuro-thumbnail.active) {
+  background: #fff8fc;
+  border-color: #e7a9ca;
+  box-shadow: 0 5px 17px rgba(171, 91, 135, .12);
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail {
+  width: 100%;
+  margin: 0;
+  padding: 9px 6px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  gap: 9px;
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail.active {
+  background: #ffedf6;
+  border-color: #e9bbd3;
+  box-shadow: none;
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail-paper {
+  max-width: 100%;
+  border: 1px solid #ebd8e3;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(103, 63, 87, .11);
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail-number {
+  color: #93617f;
+  font-size: 11px;
+  font-weight: 700;
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail.active .kuro-thumbnail-number { color: #8d4770; }
+.kuro-editor .kuro-page-reorder-actions,
+.kuro-editor .kuro-page-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  margin: 7px 0 0;
+}
+.kuro-editor .kuro-page-reorder-actions button,
+.kuro-editor .kuro-page-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 4px;
+  background: #fff8fc;
+  border: 1px solid #f0dce7;
+  border-radius: 10px;
+  color: #95627f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.kuro-editor .kuro-page-actions .kuro-page-delete-button { color: #aa5975; }
+.kuro-editor .kuro-page-reorder-actions button:hover:not(:disabled),
+.kuro-editor .kuro-page-actions button:hover:not(:disabled) {
+  background: #ffeaf4;
+  border-color: #eab9d2;
+}
+.kuro-editor .kuro-page-reorder-actions button:disabled,
+.kuro-editor .kuro-page-actions button:disabled { opacity: .38; cursor: not-allowed; }
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail-add {
+  width: calc(100% - 6px);
+  margin: 12px 3px 2px;
+  min-height: 42px;
+  background: #fff0f7;
+  color: #9b5c80;
+  border: 1px dashed #dfa7c5;
+  border-radius: 13px;
+  font-weight: 700;
+}
+.kuro-editor .kuro-pink-thumbnails .kuro-thumbnail-add:hover { background: #ffe4f0; }
+.kuro-editor .kuro-pink-thumbnails button:focus-visible {
+  outline: 2px solid #c77fa6;
+  outline-offset: 2px;
+}
+
+/* El panel sigue siendo horizontal en celulares; cada tarjeta incluye sus acciones. */
+@media (max-width: 700px) {
+  .kuro-editor .kuro-pages-open .kuro-pink-thumbnails { width: 100%; max-width: 100%; padding: 8px; }
+  .kuro-editor .kuro-pink-thumbnails .kuro-thumbnails-header {
+    padding: 5px 8px 10px;
+    margin-bottom: 4px;
+  }
+  .kuro-editor .kuro-pages-open .kuro-pink-thumbnails .kuro-thumbnails-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 9px 7px 12px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kuro-editor .kuro-pages-open .kuro-page-thumbnail-entry {
+    flex: 0 0 156px;
+    width: 156px;
+    min-width: 156px;
+    padding: 7px;
+    scroll-snap-align: start;
+  }
+  .kuro-editor .kuro-pages-open .kuro-pink-thumbnails .kuro-thumbnail {
+    width: 100%;
+    min-width: 0;
+    padding: 7px 5px;
+  }
+  .kuro-editor .kuro-page-reorder-actions button,
+  .kuro-editor .kuro-page-actions button {
+    min-height: 38px;
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+  .kuro-editor .kuro-pages-open .kuro-pink-thumbnails .kuro-thumbnail-add {
+    width: calc(100% - 14px);
+    margin: 6px 7px 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kuro-editor .kuro-page-thumbnail-entry { transition: none; }
+}
+/* ===== FIN kurotexThumbnailsPinkMinimal3.css ===== */
+
+/* ===== INICIO kurotexPaperPinkMinimal3.css ===== */
+/* KUROTEX · Pink Minimal 3.0 · Etapa 4: Personalizar papel
+   Capa visual adicional. Importar DESPUÉS de todos los demás CSS del editor.
+   No altera datos, eventos, coordenadas, gestos ni guardado. */
+
+.kuro-editor .kuro-paper-panel {
+  --kuro-paper-ink: #86536f;
+  --kuro-paper-line: #efd9e5;
+  background: linear-gradient(155deg, #fffdfd 0%, #fff6fa 100%);
+  border: 1px solid var(--kuro-paper-line);
+  border-radius: 20px;
+  box-shadow: 0 16px 38px rgba(125, 73, 105, .11);
+  padding: 20px;
+  color: var(--kuro-paper-ink);
+}
+.kuro-editor .kuro-paper-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #f2dfeb;
+}
+.kuro-editor .kuro-paper-panel-heading h4 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: #85516e;
+}
+.kuro-editor .kuro-paper-panel-heading p {
+  margin: 0;
+  font-size: 12px;
+  color: #ab8198;
+}
+.kuro-editor .kuro-paper-panel-heading > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  padding: 6px;
+  border: 1px solid #efd6e3;
+  border-radius: 10px;
+  background: #fff;
+  color: #95627f;
+  cursor: pointer;
+}
+.kuro-editor .kuro-paper-panel h5 {
+  margin: 15px 0 10px;
+  color: #895672;
+  font-size: 12px;
+  font-weight: 700;
+}
+.kuro-editor .kuro-paper-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.kuro-editor .kuro-paper-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 0;
+  min-height: 114px;
+  gap: 9px;
+  padding: 12px 8px;
+  border: 1px solid #efd9e5;
+  border-radius: 15px;
+  background: #fff;
+  color: #91617d;
+  font-size: 11px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.kuro-editor .kuro-paper-option:hover { background: #fff3f9; border-color: #e9b8d1; }
+.kuro-editor .kuro-paper-option.active {
+  background: #fff0f7;
+  border-color: #d995b8;
+  box-shadow: inset 0 0 0 1px #f0c4d9;
+  color: #814665;
+}
+.kuro-editor .kuro-paper-option .kuro-paper-preview {
+  display: block;
+  flex: 0 0 auto;
+  width: min(100%, 75px);
+  height: 65px;
+  border: 1px solid #ead7e1;
+  border-radius: 5px;
+  background-color: #fffdfd;
+  box-shadow: 0 3px 8px rgba(125, 73, 105, .08);
+}
+.kuro-editor .kuro-paper-preview.paper-lined {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 13px, #ebccdc 14px, transparent 15px);
+}
+.kuro-editor .kuro-paper-preview.paper-grid {
+  background-image: linear-gradient(#ead8e2 1px, transparent 1px), linear-gradient(90deg, #ead8e2 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.kuro-editor .kuro-paper-preview.paper-dotted {
+  background-image: radial-gradient(#d7b1c5 1px, transparent 1px);
+  background-size: 13px 13px;
+}
+.kuro-editor .kuro-paper-preview.paper-pink { background-color: #ffe9f2; }
+.kuro-editor .kuro-paper-preview.paper-cream { background-color: #fff4dd; }
+.kuro-editor .kuro-paper-option > svg {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #b36b93;
+}
+.kuro-editor .kuro-paper-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 8px;
+}
+.kuro-editor .kuro-paper-colors { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.kuro-editor .kuro-color-choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 39px;
+  height: 39px;
+  min-width: 39px;
+  padding: 0;
+  border: 2px solid #e8d5e0;
+  border-radius: 50%;
+  color: #945b7c;
+  cursor: pointer;
+  box-shadow: 0 2px 7px rgba(122, 73, 104, .06);
+}
+.kuro-editor .kuro-color-choice.active {
+  border-color: #d18aaf;
+  outline: 2px solid #f9dfec;
+  outline-offset: 2px;
+}
+.kuro-editor .kuro-paper-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #ebd1df;
+  border-radius: 12px;
+  background: #fff;
+  color: #86536f;
+  font-size: 12px;
+}
+.kuro-editor .kuro-apply-all {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 11px 14px;
+  border: 1px solid #e8b7d0;
+  border-radius: 13px;
+  background: #f7d7e7;
+  color: #814b69;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.kuro-editor .kuro-apply-all:hover { background: #f3c9de; }
+@media (max-width: 700px) {
+  .kuro-editor .kuro-paper-panel { padding: 14px 11px; border-radius: 15px; }
+  .kuro-editor .kuro-paper-panel-heading h4 { font-size: 15px; }
+  .kuro-editor .kuro-paper-options { gap: 7px; }
+  .kuro-editor .kuro-paper-option { min-height: 101px; padding: 9px 4px; gap: 7px; font-size: 10px; border-radius: 12px; }
+  .kuro-editor .kuro-paper-option .kuro-paper-preview { height: 54px; width: min(100%, 63px); }
+  .kuro-editor .kuro-paper-settings-grid { gap: 12px; }
+  .kuro-editor .kuro-paper-colors { gap: 8px; }
+  .kuro-editor .kuro-color-choice { width: 35px; height: 35px; min-width: 35px; }
+}
+@media (max-width: 360px) {
+  .kuro-editor .kuro-paper-settings-grid { grid-template-columns: 1fr; gap: 2px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kuro-editor .kuro-paper-option { transition: none; }
+}
+/* ===== FIN kurotexPaperPinkMinimal3.css ===== */
