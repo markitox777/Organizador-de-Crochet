@@ -1,0 +1,54 @@
+/* Kurotex — Mis proyectos, Pink Minimal. Estilos aislados. */
+.kuro-projects{--kp-ink:#794d68;--kp-accent:#a95f83;--kp-border:#eed7e3;--kp-soft:#fff4f9;color:var(--kp-ink);max-width:1300px;margin:0 auto;padding-bottom:50px}
+.kuro-projects-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px}
+.kuro-projects-heading h2{margin:4px 0 8px;font-size:clamp(24px,3vw,32px);color:#925b7a}
+.kuro-projects-heading p{margin:0;color:#a47d92}
+.kuro-projects-eyebrow{color:#ba8ba7;font-size:13px;font-weight:700}
+.kuro-projects button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;transition:background .15s ease,transform .15s ease}
+.kuro-projects button:focus-visible{outline:3px solid #bd7197;outline-offset:2px}
+.kuro-projects-primary{background:#eebdd4;color:#6f3b58;border:1px solid #e9afca;padding:11px 17px;font-weight:700}
+.kuro-projects-primary:hover{background:#e9a9c7}
+.kuro-projects-primary:disabled{opacity:.55;cursor:not-allowed}
+.kuro-projects-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.kuro-projects-summary>div{background:#fff;border:1px solid var(--kp-border);padding:19px;border-radius:19px;box-shadow:0 4px 14px #9a658112;display:flex;flex-direction:column;gap:4px}
+.kuro-projects-summary strong{font-size:29px;color:#9f6482}
+.kuro-projects-summary span{font-size:13px;color:#a27a90}
+.kuro-projects-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.kuro-projects-search{display:flex;align-items:center;gap:9px;flex:1;min-width:200px;background:white;border:1px solid var(--kp-border);border-radius:14px;padding:0 13px;color:#a87590}
+.kuro-projects-search input{width:100%;border:none;background:transparent;outline:none;padding:12px 0;color:var(--kp-ink);font:inherit}
+.kuro-projects-filter select{height:100%;min-height:45px;background:#fff;border:1px solid var(--kp-border);border-radius:14px;padding:10px 13px;color:var(--kp-ink);font:inherit;max-width:100%}
+.kuro-projects-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.kuro-projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:17px}
+.kuro-projects-card{padding:19px;border-radius:20px;background:#fff;border:1px solid var(--kp-border);box-shadow:0 5px 16px #a76c8c12;min-width:0}
+.kuro-projects-cardtop{display:flex;align-items:center;justify-content:space-between}
+.kuro-projects-heart{font-size:22px;color:#c78eab}
+.kuro-projects-status{font-size:12px;font-weight:700;border-radius:999px;padding:7px 11px;background:#f7e5ee;color:#975d7e}
+.kuro-projects-status.is-terminado{background:#e4f4e8;color:#417552}
+.kuro-projects-status.is-en_proceso{background:#fff0d9;color:#93662c}
+.kuro-projects-status.is-pausado{background:#eeeaf7;color:#74638f}
+.kuro-projects-card h3{font-size:19px;line-height:1.35;overflow-wrap:anywhere;margin:14px 0;color:#895472}
+.kuro-projects-description,.kuro-projects-details{overflow-wrap:anywhere;white-space:pre-wrap;font-size:13px;color:#98768a;line-height:1.5}
+.kuro-projects-details{margin:10px 0 0}
+.kuro-projects-progress-heading{display:flex;justify-content:space-between;gap:8px;margin:20px 0 8px;font-size:13px}
+.kuro-projects-progressbar{height:9px;border-radius:99px;background:#f6e4ed;overflow:hidden}
+.kuro-projects-progressbar span{height:100%;display:block;background:#d989b1;border-radius:99px;transition:width .2s ease}
+.kuro-projects-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid #f4e7ee}
+.kuro-projects-actions button,.kuro-projects-secondary{padding:9px 12px;border:1px solid var(--kp-border);background:#fff4f8;color:#895471;font-weight:600}
+.kuro-projects-actions button:hover,.kuro-projects-secondary:hover{background:#fbe5ef}
+.kuro-projects-actions button.is-danger{background:white;color:#a2516c}
+.kuro-projects-empty{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:240px;text-align:center;border:1px dashed #e7bed3;border-radius:20px;background:#fff9fc;color:#a17b92;padding:24px}
+.kuro-projects-empty h3{margin:4px 0;color:#9b6381}.kuro-projects-empty p{margin:0 0 12px;max-width:350px}
+.kuro-projects-error{padding:12px 15px;background:#fff0f1;border:1px solid #f4c0ce;border-radius:12px;color:#a43b5c}
+.kuro-projects-overlay{position:fixed;inset:0;background:#44283a82;display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000}
+.kuro-projects-dialog{width:min(100%,550px);max-height:min(90vh,850px);overflow:auto;background:#fffafd;border:1px solid #eccfdf;border-radius:22px;padding:22px;box-shadow:0 20px 60px #42253844}
+.kuro-projects-dialogtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.kuro-projects-dialogtop h3{margin:0;color:#8f5374;font-size:21px}
+.kuro-projects-dialogtop button{border:0;background:transparent;color:#94647f;padding:6px}
+.kuro-projects-dialog form{display:grid;gap:15px}
+.kuro-projects-dialog form label{display:flex;flex-direction:column;gap:7px;font-weight:600;font-size:13px;color:#885b76;min-width:0}
+.kuro-projects-dialog input:not([type=range]),.kuro-projects-dialog textarea,.kuro-projects-dialog select{background:white;border:1px solid #e9c9da;border-radius:11px;padding:11px;font:inherit;color:#6e4861;width:100%;min-width:0}
+.kuro-projects-dialog textarea{resize:vertical}
+.kuro-projects-dialog input[type=range]{accent-color:#be7298;cursor:pointer;width:100%;margin:12px 0}
+.kuro-projects-formrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.kuro-projects-formactions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:6px}
+@media(max-width:600px){.kuro-projects-heading>.kuro-projects-primary{width:100%}.kuro-projects-summary{gap:8px}.kuro-projects-summary>div{padding:13px 10px}.kuro-projects-summary strong{font-size:24px}.kuro-projects-summary span{font-size:11px}.kuro-projects-controls{flex-direction:column}.kuro-projects-filter select{width:100%}.kuro-projects-dialog{padding:17px}.kuro-projects-formrow{grid-template-columns:1fr}.kuro-projects-formactions button{flex:1}}

@@ -1,0 +1,135 @@
+/* Kurotex — Mis pedidos · Pink Minimal. Estilos exclusivos de esta sección. */
+.kuro-orders{--ko-ink:#794d68;--ko-border:#eed7e3;--ko-muted:#9d758d;color:var(--ko-ink);max-width:1400px;margin:0 auto;padding-bottom:50px;min-width:0}
+.kuro-orders *{box-sizing:border-box}
+.kuro-orders-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:24px}
+.kuro-orders-heading h2{margin:5px 0 8px;font-size:clamp(24px,3vw,32px);color:#925b7a}
+.kuro-orders-heading p{margin:0;color:var(--ko-muted)}
+.kuro-orders-eyebrow{font-size:13px;font-weight:700;color:#ba8ba7}
+.kuro-orders button{font:inherit;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:background .15s ease,border-color .15s ease}
+.kuro-orders button:focus-visible{outline:3px solid #bd7197;outline-offset:2px}
+.kuro-orders button:disabled{opacity:.55;cursor:not-allowed}
+.kuro-orders-primary{padding:11px 17px;background:#eebdd4;color:#713e5a;border:1px solid #e9afca;border-radius:13px;font-weight:700}
+.kuro-orders-primary:hover:not(:disabled){background:#e7a7c5}
+.kuro-orders-secondary{padding:10px 15px;background:#fff4f8;color:#895471;border:1px solid var(--ko-border);border-radius:12px;font-weight:600}
+.kuro-orders-secondary:hover{background:#fbe5ef}
+.kuro-orders-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:22px}
+.kuro-orders-summary>div{background:white;border:1px solid var(--ko-border);padding:18px;border-radius:19px;box-shadow:0 4px 14px #9a658112;display:flex;flex-direction:column;gap:5px;min-width:0}
+.kuro-orders-summary strong{font-size:29px;color:#9f6482;line-height:1.1}
+.kuro-orders-summary span{font-size:13px;color:#a27a90}
+.kuro-orders-error{background:#fff0f1;border:1px solid #f4c0ce;border-radius:12px;color:#a43b5c;padding:12px 15px;margin:0 0 16px}
+.kuro-orders-layout{display:grid;grid-template-columns:minmax(270px,350px) minmax(0,1fr);align-items:start;gap:20px}
+.kuro-orders-calendar,.kuro-orders-listarea{min-width:0;background:#fff;border:1px solid var(--ko-border);border-radius:22px;padding:20px;box-shadow:0 5px 18px #a76c8c11}
+.kuro-orders-calendar-heading h3,.kuro-orders-list-heading h3{display:flex;align-items:center;gap:9px;margin:0;font-size:17px;color:#8f5677}
+.kuro-orders-calendar-nav{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:17px 0 14px}
+.kuro-orders-calendar-nav strong{text-align:center;font-size:14px;text-transform:capitalize;color:#87516e}
+.kuro-orders-calendar-nav button{width:33px;height:33px;flex-shrink:0;border:1px solid #efd9e5;border-radius:11px;background:#fff5fa;color:#966184}
+.kuro-orders-calendar-nav button:hover{background:#f9e3ed}
+.kuro-orders-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.kuro-orders-weekday{height:27px;text-align:center;font-size:12px;font-weight:700;color:#b187a0;display:grid;place-items:center}
+.kuro-orders-day,.kuro-orders-day-empty{min-width:0;min-height:41px;position:relative}
+.kuro-orders-day{padding:5px 1px 11px;background:#fff;border:1px solid transparent;border-radius:10px;color:#895b77;font-size:13px}
+.kuro-orders-day:hover{background:#fff0f6;border-color:#efd3e1}
+.kuro-orders-day.is-today{border-color:#dca4bf;font-weight:700}
+.kuro-orders-day.is-selected{background:#eebbd4;border-color:#de94b8;color:#683853;font-weight:700}
+.kuro-orders-day small{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);background:#c47fa2;color:white;border-radius:12px;font-size:9px;min-width:15px;height:13px;display:grid;place-items:center;line-height:1}
+.kuro-orders-day.is-selected small{background:#83516e}
+.kuro-orders-calendar-help{color:#a28094;font-size:12px;line-height:1.5;margin:17px 0 0}
+.kuro-orders-clear{margin-top:13px;padding:8px 10px;background:#fff0f6;border:1px solid #edcddc;border-radius:10px;color:#85516e;font-size:12px;width:100%;text-align:center}
+.kuro-orders-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:17px}
+.kuro-orders-list-heading span{font-size:12px;color:#a37b93}
+.kuro-orders-controls{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.kuro-orders-search{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--ko-border);border-radius:13px;padding:0 12px;color:#ad8099;flex:1;min-width:180px}
+.kuro-orders-search input{font:inherit;color:var(--ko-ink);background:transparent;width:100%;min-width:0;padding:11px 0;border:0;outline:0}
+.kuro-orders-filter select{font:inherit;color:var(--ko-ink);background:white;border:1px solid var(--ko-border);border-radius:13px;padding:10px 11px;min-height:44px;max-width:100%}
+.kuro-orders-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.kuro-orders-empty{min-height:250px;border:1px dashed #eac4d7;border-radius:18px;background:#fff9fc;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:9px;text-align:center;color:#a17b92;padding:23px}
+.kuro-orders-empty h3{margin:4px 0;color:#995f80}
+.kuro-orders-empty p{margin:0 0 10px;max-width:330px;font-size:13px;line-height:1.5}
+.kuro-orders-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:14px}
+.kuro-orders-card{min-width:0;border:1px solid #efd8e4;background:#fffdfd;border-radius:17px;padding:17px;box-shadow:0 4px 12px #a76c8c0d}
+.kuro-orders-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.kuro-orders-status{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#f6e6ee;color:#91607c;font-size:11px;font-weight:700}
+.kuro-orders-status.is-en_proceso{background:#fff0d9;color:#93662c}
+.kuro-orders-status.is-listo{background:#e4f0ff;color:#486d96}
+.kuro-orders-status.is-entregado{background:#e3f3e8;color:#40764f}
+.kuro-orders-status.is-cancelado{background:#f4e8e8;color:#99636d}
+.kuro-orders-delivery{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#a17a90}
+.kuro-orders-card h4{font-size:18px;line-height:1.35;color:#88516f;margin:15px 0 7px;overflow-wrap:anywhere}
+.kuro-orders-client{font-size:13px;font-weight:650;color:#956981;margin:0 0 10px;overflow-wrap:anywhere}
+.kuro-orders-description,.kuro-orders-notes,.kuro-orders-project{font-size:12px;line-height:1.55;color:#98758a;overflow-wrap:anywhere;white-space:pre-wrap}
+.kuro-orders-project{background:#fff1f7;border:1px solid #f2dce7;padding:9px;border-radius:10px}
+.kuro-orders-prices{display:grid;gap:8px;margin:15px 0;padding:12px;background:#fff5f9;border-radius:12px}
+.kuro-orders-prices span{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#97728a}
+.kuro-orders-prices strong{color:#80506b;text-align:right}
+.kuro-orders-payment{display:inline-flex;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;background:#faedf3;color:#995a79}
+.kuro-orders-payment.is-pagado{background:#e3f3e8;color:#40764f}
+.kuro-orders-payment.is-abono{background:#fff0d9;color:#93662c}
+.kuro-orders-notes{margin:12px 0}
+.kuro-orders-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #f3e5ed;margin-top:15px;padding-top:13px}
+.kuro-orders-actions button{background:#fff4f8;border:1px solid var(--ko-border);border-radius:10px;padding:8px 11px;color:#885470;font-size:12px;font-weight:650}
+.kuro-orders-actions button:hover{background:#fbe2ed}
+.kuro-orders-actions .is-danger{color:#a4526c;background:#fff}
+.kuro-orders-overlay{position:fixed;inset:0;background:#44283a82;display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000}
+.kuro-orders-dialog{width:min(100%,600px);max-height:min(92vh,850px);overflow-y:auto;overscroll-behavior:contain;background:#fffafd;border:1px solid #eccfdf;border-radius:22px;padding:22px;box-shadow:0 20px 60px #42253844}
+.kuro-orders-dialog-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.kuro-orders-dialog-top h3{margin:0;color:#905875;font-size:21px}
+.kuro-orders-dialog-top button{border:0;background:transparent;border-radius:8px;padding:6px;color:#95647f}
+.kuro-orders-dialog form{display:grid;gap:15px}
+.kuro-orders-dialog form label{display:flex;flex-direction:column;gap:7px;min-width:0;font-weight:600;font-size:13px;color:#885b76}
+.kuro-orders-dialog input,.kuro-orders-dialog textarea,.kuro-orders-dialog select{width:100%;min-width:0;background:white;color:#6e4861;border:1px solid #e9c9da;border-radius:11px;padding:11px;font:inherit}
+.kuro-orders-dialog textarea{resize:vertical}
+.kuro-orders-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.kuro-orders-form-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:10px;margin-top:8px}
+@media(max-width:1050px){.kuro-orders-layout{grid-template-columns:1fr}.kuro-orders-calendar{max-width:560px;width:100%}}
+@media(max-width:650px){.kuro-orders-heading>.kuro-orders-primary{width:100%}.kuro-orders-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.kuro-orders-summary>div{padding:13px}.kuro-orders-summary strong{font-size:25px}.kuro-orders-calendar,.kuro-orders-listarea{padding:15px}.kuro-orders-calendar-grid{gap:3px}.kuro-orders-day{min-height:39px}.kuro-orders-controls{flex-direction:column}.kuro-orders-filter select{width:100%}.kuro-orders-form-row{grid-template-columns:1fr}.kuro-orders-dialog{padding:16px}.kuro-orders-form-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.kuro-orders button{transition:none}}
+
+
+/* ================================================
+   KUROTEX · Prioridad por proximidad de entrega
+   is-urgent: vencido, hoy y 1-3 dias
+   is-upcoming: 4-7 dias
+   is-future: mas de 7 dias
+   Solo se aplican en fechas con pedidos.
+   ================================================ */
+.kuro-orders .kuro-orders-day.has-orders.is-urgent {
+  background: #f9d7d9;
+  color: #982f3e;
+  border-color: #e7a4ad;
+  font-weight: 700;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-upcoming {
+  background: #fff0bc;
+  color: #886214;
+  border-color: #e7cd7c;
+  font-weight: 700;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-future {
+  background: #e8bad4;
+  color: #794264;
+  border-color: #cb84ad;
+  font-weight: 700;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-urgent small {
+  background: #b34454;
+  color: #fff;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-upcoming small {
+  background: #a67a20;
+  color: #fff;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-future small {
+  background: #995b83;
+  color: #fff;
+}
+/* Mantener visible la seleccion del dia y la marca de hoy. */
+.kuro-orders .kuro-orders-day.has-orders.is-selected {
+  outline: 2px solid #83516e;
+  outline-offset: 1px;
+}
+.kuro-orders .kuro-orders-day.has-orders.is-today {
+  box-shadow: inset 0 0 0 2px #a36889;
+}
+.kuro-orders .kuro-orders-day.has-orders:hover {
+  filter: brightness(.97);
+}

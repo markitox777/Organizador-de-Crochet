@@ -59,7 +59,11 @@ type LibraryBook = {
   pattern?: Pattern;
 };
 
-export default function PatternsLibrary() {
+type PatternsLibraryProps = {
+  requestedBookId?: string | null;
+};
+
+export default function PatternsLibrary({ requestedBookId = null }: PatternsLibraryProps) {
   const [folders, setFolders] = useState<PatternFolder[]>(
     getFolders
   );
@@ -99,6 +103,15 @@ export default function PatternsLibrary() {
   const [bookCover, setBookCover] = useState('');
   const [busy, setBusy] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+
+  // Abrir el mini libro solicitado desde Mis proyectos.
+  useEffect(() => {
+    if (requestedBookId) {
+      setSelectedBookId(requestedBookId);
+      setShowLegacyEditor(false);
+      setBookTab('pages');
+    }
+  }, [requestedBookId]);
 
   // ==========================================
   // CARGAR DATOS
