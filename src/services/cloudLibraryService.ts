@@ -2,7 +2,7 @@
  * Kurotex - acceso a la biblioteca PRIVADA en Supabase.
  *
  * Este módulo NO migra datos ni modifica IndexedDB/localStorage.
- * Se utilizará tras crear y verificar una copia de seguridad local.
+ * No importa datos locales: cada cuenta comienza con su biblioteca en la nube.
  *
  * Las cuatro tablas y sus políticas RLS deben existir en Supabase.
  */
@@ -100,7 +100,7 @@ export async function saveCloudFolder(folder: PatternFolder): Promise<void> {
     created_at: folder.createdAt,
     updated_at: new Date().toISOString(),
     data: {},
-  }, { onConflict: 'id' });
+  }, { onConflict: 'user_id,id' });
 
   if (error) throw new Error(`No se pudo guardar la carpeta: ${error.message}`);
 }
@@ -133,7 +133,9 @@ export async function getCloudMiniBook(id: string): Promise<CloudMiniBook | null
 }
 
 /**
- * Guarda TODOS los datos del mini libro, incluidas sus páginas.
+ * Guarda el contenido completo actual (portada y páginas).
+ * No usar para editar solo un campo ni después de añadir otros campos JSONB
+ * sin adaptar esta función para conservarlos.
  * Si folderId no es null, esa carpeta debe existir previamente en Supabase.
  * No elimina ni modifica las páginas de IndexedDB.
  */
@@ -152,7 +154,7 @@ export async function saveCloudMiniBook(
     data: payload,
     created_at: book.createdAt,
     updated_at: book.updatedAt,
-  }, { onConflict: 'id' });
+  }, { onConflict: 'user_id,id' });
 
   if (error) throw new Error(`No se pudo guardar el mini libro: ${error.message}`);
 }
@@ -166,4 +168,38 @@ export async function deleteCloudMiniBook(id: string): Promise<void> {
     .eq('id', id);
 
   if (error) throw new Error(`No se pudo eliminar el mini libro: ${error.message}`);
+}
+
+/** Cambia únicamente el nombre; conserva los demás datos de la carpeta. */
+export async function renameCloudFolder(id: string, name: string): Promise<void> {
+  const cleanName = name.trim();
+  if (!cleanName) throw new Error('Escribe un nombre para la carpeta.');
+  const userId = await requireUserId();
+  const { data, error } = await supabase.from('kurotex_folders')
+    .update({ name: cleanName, updated_at: new Date().toISOString() })
+    .eq('user_id', userId).eq('id', id).select('id').maybeSingle();
+  if (error) throw new Error(`No se pudo renombrar la carpeta: ${error.message}`);
+  if (!data) throw new Error('No se encontró la carpeta de esta cuenta.');
+}
+
+/** Elimina una carpeta vacía. La FK impide borrar carpetas con libros. */
+export async function deleteCloudFolder(id: string): Promise<void> {
+  const userId = await requireUserId();
+  const { data, error } = await supabase.from('kurotex_folders')
+    .delete().eq('user_id', userId).eq('id', id).select('id').maybeSingle();
+  if (error?.code === '23503') {
+    throw new Error('La carpeta contiene libros. Primero deben pasar a Sin clasificar.');
+  }
+  if (error) throw new Error(`No se pudo eliminar la carpeta: ${error.message}`);
+  if (!data) throw new Error('No se encontró la carpeta de esta cuenta.');
+}
+
+/** Cambia la carpeta de un libro sin sobrescribir sus páginas ni portada. */
+export async function moveCloudMiniBook(id: string, folderId: string | null): Promise<void> {
+  const userId = await requireUserId();
+  const { data, error } = await supabase.from('kurotex_books')
+    .update({ folder_id: folderId, updated_at: new Date().toISOString() })
+    .eq('user_id', userId).eq('id', id).select('id').maybeSingle();
+  if (error) throw new Error(`No se pudo mover el mini libro: ${error.message}`);
+  if (!data) throw new Error('No se encontró el mini libro de esta cuenta.');
 }

@@ -1,221 +1,59 @@
-
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { FileText, Save, Upload, Trash2 } from 'lucide-react';
-
-import {
-  getPatterns,
-  savePatterns
-} from '../../services/patternService';
-
-import {
-  EMPTY_PATTERN_INFO,
-  getBookPatternInfo,
-  saveBookPatternInfo,
-  getPatternPdf,
-  savePatternPdf,
-  deletePatternPdf
-} from '../../services/bookPatternInfoService';
-
-import type {
-  BookPatternInfo
-} from '../../services/bookPatternInfoService';
-
+import { EMPTY_PATTERN_INFO } from '../../services/bookPatternInfoService';
+import type { BookPatternInfo } from '../../services/bookPatternInfoService';
+import { loadCloudPatternInfo, saveCloudPatternInfo, uploadCloudPatternPdf, downloadCloudPatternPdf, removeCloudPatternPdf } from '../../services/cloudPatternInfoService';
 import '../../styles/patternInfo.css';
 
-type Props = {
-  bookId: string;
-  legacy?: boolean;
-};
-
-export default function PatternInfoPanel({
-  bookId,
-  legacy = false
-}: Props) {
-  const [info, setInfo] = useState<BookPatternInfo>({
-    ...EMPTY_PATTERN_INFO
-  });
-
+type Props = { bookId: string; ownerId: string };
+export default function PatternInfoPanel({ bookId, ownerId }: Props) {
+  const [info, setInfo] = useState<BookPatternInfo>({ ...EMPTY_PATTERN_INFO });
   const [pdfName, setPdfName] = useState('');
-  const [originalPdfName, setOriginalPdfName] = useState('');
+  const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-
+  const [message, setMessage] = useState('Cargando información...');
   useEffect(() => {
     let active = true;
-
-    const saved = getBookPatternInfo(bookId);
-    const original = legacy
-      ? getPatterns().find(pattern => pattern.id === bookId)
-      : undefined;
-
-    setInfo(
-      original
-        ? {
-            category: original.category ?? '',
-            difficulty: original.difficulty ?? '',
-            description: original.description ?? '',
-            materials: original.materials ?? '',
-            instructions: original.instructions ?? ''
-          }
-        : saved
-    );
-
-    setOriginalPdfName(original?.pdfName ?? '');
+    setLoaded(false);
+    setInfo({ ...EMPTY_PATTERN_INFO });
     setPdfName('');
-    setMessage('');
-
-    getPatternPdf(bookId)
-      .then(pdf => {
-        if (active) {
-          setPdfName(pdf?.name ?? '');
-        }
-      })
-      .catch(error => {
-        console.error(error);
-        if (active) setMessage('No se pudo cargar el PDF.');
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [bookId, legacy]);
-
-  const update = (
-    field: keyof BookPatternInfo,
-    value: string
-  ) => {
-    setInfo(previous => ({
-      ...previous,
-      [field]: value
-    }));
-
-    setMessage('');
+    setMessage('Cargando información...');
+    void loadCloudPatternInfo(bookId, ownerId).then(result => {
+      if (!active) return;
+      setInfo(result.info); setPdfName(result.pdfName); setLoaded(true); setMessage('');
+    }).catch(error => { console.error(error); if (active) setMessage('No se pudo cargar la información. Vuelve a abrir el mini libro.'); });
+    return () => { active = false; };
+  }, [bookId, ownerId]);
+  const update = (field: keyof BookPatternInfo, value: string) => {
+    setInfo(previous => ({ ...previous, [field]: value })); setMessage('');
   };
-
+  const run = async (action: () => Promise<void>, failure: string) => {
+    if (!loaded || saving) return;
+    setSaving(true); setMessage('');
+    try { await action(); } catch (error) { console.error(error); setMessage(failure); }
+    finally { setSaving(false); }
+  };
   const saveInformation = (event: FormEvent) => {
     event.preventDefault();
-    setSaving(true);
-    setMessage('');
-
-    try {
-      if (legacy) {
-        const patterns = getPatterns();
-        const exists = patterns.some(
-          pattern => pattern.id === bookId
-        );
-
-        if (!exists) {
-          throw new Error('El patrón original ya no existe.');
-        }
-
-        const updated = patterns.map(pattern =>
-          pattern.id === bookId
-            ? {
-                ...pattern,
-                category: info.category,
-                difficulty: info.difficulty,
-                description: info.description,
-                materials: info.materials,
-                instructions: info.instructions
-              }
-            : pattern
-        );
-
-        savePatterns(updated);
-      } else {
-        saveBookPatternInfo(bookId, info);
-      }
-
-      setMessage('✓ Información guardada');
-    } catch (error) {
-      console.error(error);
-      setMessage('No se pudo guardar la información.');
-    } finally {
-      setSaving(false);
-    }
+    void run(async () => { await saveCloudPatternInfo(bookId, ownerId, info); setMessage('✓ Información guardada en la nube'); }, 'No se pudo guardar la información. Intenta nuevamente.');
   };
-
-  const uploadPdf = async (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-
+  const uploadPdf = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; event.target.value = '';
     if (!file) return;
-
-    if (
-      file.type !== 'application/pdf' &&
-      !file.name.toLowerCase().endsWith('.pdf')
-    ) {
-      setMessage('Selecciona un archivo PDF válido.');
-      return;
-    }
-
-    if (file.size > 20 * 1024 * 1024) {
-      setMessage('El PDF no puede superar los 20 MB.');
-      return;
-    }
-
-    setSaving(true);
-    setMessage('');
-
-    try {
-      await savePatternPdf(bookId, file);
-      setPdfName(file.name);
-      setMessage('✓ PDF adjuntado correctamente');
-    } catch (error) {
-      console.error(error);
-      setMessage('No se pudo adjuntar el PDF.');
-    } finally {
-      setSaving(false);
-    }
+    if (!file.name.toLowerCase().endsWith('.pdf') || file.size > 20 * 1024 * 1024) { setMessage('Selecciona un PDF de hasta 20 MB.'); return; }
+    void run(async () => { await uploadCloudPatternPdf(bookId, ownerId, file); setPdfName(file.name); setMessage('✓ PDF guardado en la nube'); }, 'No se pudo adjuntar el PDF. Comprueba el archivo y la configuración de Storage.');
   };
-
-  const openPdf = async () => {
-    try {
-      const pdf = await getPatternPdf(bookId);
-
-      if (!pdf) {
-        setMessage('No se encontró el archivo PDF.');
-        return;
-      }
-
-      const url = URL.createObjectURL(pdf.blob);
-      const link = document.createElement('a');
-
-      link.href = url;
-      link.download = pdf.name;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      window.setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 60000);
-    } catch (error) {
-      console.error(error);
-      setMessage('No se pudo descargar el PDF.');
-    }
-  };
-
-  const removePdf = async () => {
-    if (!window.confirm('¿Quitar este PDF del mini libro?')) {
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      await deletePatternPdf(bookId);
-      setPdfName('');
-      setMessage('PDF quitado correctamente.');
-    } catch (error) {
-      console.error(error);
-      setMessage('No se pudo quitar el PDF.');
-    } finally {
-      setSaving(false);
-    }
+  const openPdf = () => run(async () => {
+    const pdf = await downloadCloudPatternPdf(bookId, ownerId);
+    const url = URL.createObjectURL(pdf.blob);
+    const link = document.createElement('a'); link.href = url; link.download = pdf.name;
+    document.body.appendChild(link); link.click(); link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }, 'No se pudo descargar el PDF.');
+  const removePdf = () => {
+    if (!window.confirm('¿Quitar este PDF del mini libro?')) return;
+    return run(async () => { await removeCloudPatternPdf(bookId, ownerId); setPdfName(''); setMessage('PDF quitado correctamente.'); }, 'No se pudo quitar el PDF.');
   };
 
   return (
@@ -228,6 +66,7 @@ export default function PatternInfoPanel({
       </div>
 
       <form onSubmit={saveInformation}>
+        <fieldset disabled={saving || !loaded} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <div className="kuro-info-two-columns">
           <label className="kuro-info-field">
             Categoría
@@ -303,12 +142,13 @@ export default function PatternInfoPanel({
         <div className="kuro-info-save">
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || !loaded}
           >
             <Save size={17} />
             {saving ? 'Guardando...' : 'Guardar información'}
           </button>
         </div>
+        </fieldset>
       </form>
 
       <div className="kuro-info-pdf">
@@ -316,16 +156,6 @@ export default function PatternInfoPanel({
           <FileText size={19} />
           PDF del patrón
         </h4>
-
-        {originalPdfName && (
-          <p>
-            Archivo del patrón anterior: <strong>{originalPdfName}</strong>
-            <br />
-            <small>
-              El archivo original se conserva en su sistema anterior.
-            </small>
-          </p>
-        )}
 
         {pdfName ? (
           <div className="kuro-info-pdf-file">
@@ -338,7 +168,7 @@ export default function PatternInfoPanel({
               <button
                 type="button"
                 onClick={() => void openPdf()}
-                disabled={saving}
+                disabled={saving || !loaded}
               >
                 Descargar
               </button>
@@ -346,7 +176,7 @@ export default function PatternInfoPanel({
               <button
                 type="button"
                 onClick={() => void removePdf()}
-                disabled={saving}
+                disabled={saving || !loaded}
                 aria-label="Quitar PDF"
               >
                 <Trash2 size={16} />
@@ -354,7 +184,7 @@ export default function PatternInfoPanel({
             </div>
           </div>
         ) : (
-          <p>No hay un PDF nuevo adjunto.</p>
+          <p>No hay un PDF adjunto.</p>
         )}
 
         <label className="kuro-info-upload">
@@ -365,7 +195,7 @@ export default function PatternInfoPanel({
             type="file"
             accept=".pdf,application/pdf"
             onChange={uploadPdf}
-            disabled={saving}
+            disabled={saving || !loaded}
             hidden
           />
         </label>

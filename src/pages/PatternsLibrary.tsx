@@ -15,38 +15,12 @@ import {
   X
 } from 'lucide-react';
 
+import { supabase } from '../lib/supabase';
 import BookEditor from '../components/editor/BookEditor';
-import Patterns from './Patterns';
 import PatternInfoPanel from '../components/editor/PatternInfoPanel';
+import type { MiniBook } from '../services/bookLibraryService';
+import type { PatternFolder } from '../services/folderService';
 import '../styles/patternInfo.css';
-
-import {
-  getMiniBooks,
-  saveMiniBook,
-  deleteMiniBook
-} from '../services/bookLibraryService';
-
-import type {
-  MiniBook
-} from '../services/bookLibraryService';
-
-import { getPatterns } from '../services/patternService';
-import type { Pattern } from '../types/pattern';
-
-import {
-  getFolders,
-  saveFolders,
-  getBookLocations,
-  setBookFolder,
-  removeBookLocation,
-  removeFolderLocations
-} from '../services/folderService';
-
-import type {
-  PatternFolder
-} from '../services/folderService';
-
-import { deleteBook } from '../services/bookService';
 
 import '../styles/bookLibrary.css';
 import '../styles/folders.css';
@@ -55,8 +29,6 @@ type LibraryBook = {
   id: string;
   title: string;
   cover: string;
-  legacy: boolean;
-  pattern?: Pattern;
 };
 
 type PatternsLibraryProps = {
@@ -64,16 +36,13 @@ type PatternsLibraryProps = {
 };
 
 export default function PatternsLibrary({ requestedBookId = null }: PatternsLibraryProps) {
-  const [folders, setFolders] = useState<PatternFolder[]>(
-    getFolders
-  );
-
-  const [locations, setLocations] = useState(
-    getBookLocations
-  );
+  const [folders, setFolders] = useState<PatternFolder[]>([]);
+  const [locations, setLocations] = useState<Record<string, string>>({});
+  const [owner, setOwner] = useState<string | null>(null);
+  const [loadedOwner, setLoadedOwner] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState('');
 
   const [miniBooks, setMiniBooks] = useState<MiniBook[]>([]);
-  const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [loading, setLoading] = useState(true);
   const [bookTab, setBookTab] = useState<'info' | 'pages'>('info');
 
@@ -84,9 +53,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   const [selectedBookId, setSelectedBookId] = useState<
     string | null
   >(null);
-
-  const [showLegacyEditor, setShowLegacyEditor] =
-    useState(false);
 
   const [search, setSearch] = useState('');
   const [folderName, setFolderName] = useState('');
@@ -108,7 +74,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   useEffect(() => {
     if (requestedBookId) {
       setSelectedBookId(requestedBookId);
-      setShowLegacyEditor(false);
       setBookTab('pages');
     }
   }, [requestedBookId]);
@@ -117,68 +82,69 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   // CARGAR DATOS
   // ==========================================
 
-  const refresh = async () => {
-    const savedBooks = await getMiniBooks();
+  // Solo datos de la cuenta activa; nunca leer los registros locales anteriores.
+  const loadLibrary = async (userId: string) => {
+    const [folderResult, bookResult] = await Promise.all([
+      supabase.from('kurotex_folders').select('id,name,created_at').eq('user_id', userId).order('created_at'),
+      supabase.from('kurotex_books').select('id,title,folder_id,data,created_at,updated_at').eq('user_id', userId).order('updated_at', { ascending: false }),
+    ]);
+    if (folderResult.error) throw folderResult.error;
+    if (bookResult.error) throw bookResult.error;
+    const nextFolders: PatternFolder[] = (folderResult.data ?? []).map(row => ({ id: row.id, name: row.name, createdAt: row.created_at }));
+    const nextLocations: Record<string, string> = {};
+    const nextBooks: MiniBook[] = (bookResult.data ?? []).map(row => {
+      if (row.folder_id) nextLocations[row.id] = row.folder_id;
+      return { id: row.id, title: row.title, cover: typeof row.data?.cover === 'string' ? row.data.cover : '', createdAt: row.created_at, updatedAt: row.updated_at };
+    });
+    return { nextFolders, nextLocations, nextBooks };
+  };
 
-    setMiniBooks(savedBooks);
-    setPatterns(getPatterns());
-    setFolders(getFolders());
-    setLocations(getBookLocations());
+  const requireOwner = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !owner || data.user?.id !== owner) throw new Error('La sesión cambió. Vuelve a abrir la biblioteca.');
+    return owner;
+  };
+
+  const refresh = async () => {
+    const userId = await requireOwner();
+    const result = await loadLibrary(userId);
+    await requireOwner();
+    setFolders(result.nextFolders);
+    setLocations(result.nextLocations);
+    setMiniBooks(result.nextBooks);
   };
 
   useEffect(() => {
     let active = true;
-
-    Promise.all([
-      getMiniBooks(),
-      Promise.resolve(getPatterns())
-    ])
-      .then(([savedBooks, savedPatterns]) => {
-        if (!active) return;
-
-        setMiniBooks(savedBooks);
-        setPatterns(savedPatterns);
-      })
-      .catch(error => {
-        console.error(error);
-
-        if (active) {
-          alert('No se pudo cargar la biblioteca.');
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextOwner = session?.user.id ?? null;
+      setOwner(previous => previous === nextOwner ? previous : nextOwner);
+    });
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (active && !error) setOwner(data.user?.id ?? null);
+    });
+    return () => { active = false; subscription.unsubscribe(); };
   }, []);
 
-  // ==========================================
-  // UNIFICAR MINI LIBROS Y PATRONES ANTIGUOS
-  // ==========================================
+  useEffect(() => {
+    let active = true;
+    setFolders([]); setLocations({}); setMiniBooks([]);
+    setFolderId(null); setSelectedBookId(requestedBookId);
+    setShowBookForm(false); setShowFolderForm(false);
+    setBookTitle(''); setBookCover(''); setEditingBookId(null); setFolderName('');
+    setLoadError(''); setLoading(true);
+    if (!owner) return () => { active = false; };
+    void loadLibrary(owner).then(result => {
+      if (!active) return;
+      setFolders(result.nextFolders); setLocations(result.nextLocations); setMiniBooks(result.nextBooks); setLoadedOwner(owner);
+    }).catch(error => {
+      console.error(error);
+      if (active) setLoadError('No se pudo cargar tu biblioteca privada. Vuelve a entrar en Mis patrones.');
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [owner]);
 
-  const books: LibraryBook[] = [
-    ...miniBooks.map(book => ({
-      id: book.id,
-      title: book.title,
-      cover: book.cover,
-      legacy: false
-    })),
-
-    ...patterns
-      .filter(pattern =>
-        !miniBooks.some(book => book.id === pattern.id)
-      )
-      .map(pattern => ({
-        id: pattern.id,
-        title: pattern.name,
-        cover: pattern.image ?? '',
-        legacy: true,
-        pattern
-      }))
-  ];
+  const books: LibraryBook[] = miniBooks.map(book => ({ id: book.id, title: book.title, cover: book.cover }));
 
   const selectedBook = books.find(
     book => book.id === selectedBookId
@@ -233,11 +199,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   };
 
   const editBook = (book: LibraryBook) => {
-    if (book.legacy) {
-      setSelectedBookId(book.id);
-      return;
-    }
-
     setEditingBookId(book.id);
     setBookTitle(book.title);
     setBookCover(book.cover);
@@ -320,10 +281,22 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
     };
 
     try {
-      await saveMiniBook(book);
-
-      if (!existing && folderId) {
-        setBookFolder(book.id, folderId);
+      const userId = await requireOwner();
+      if (existing) {
+        // Preservar páginas y futuros campos JSON; rechazar cambios concurrentes.
+        const { data: row, error: readError } = await supabase.from('kurotex_books')
+          .select('data,updated_at').eq('user_id', userId).eq('id', book.id).single();
+        if (readError || !row) throw readError ?? new Error('Libro no encontrado.');
+        const { data: updated, error } = await supabase.from('kurotex_books')
+          .update({ title: book.title, data: { ...row.data, cover: book.cover }, updated_at: now })
+          .eq('user_id', userId).eq('id', book.id).eq('updated_at', row.updated_at).select('id').maybeSingle();
+        if (error || !updated) throw error ?? new Error('El libro cambió durante la edición.');
+      } else {
+        const { error } = await supabase.from('kurotex_books').insert({
+          id: book.id, user_id: userId, title: book.title, folder_id: folderId || null,
+          data: { cover: book.cover, pages: [] }, created_at: book.createdAt, updated_at: now,
+        });
+        if (error) throw error;
       }
 
       await refresh();
@@ -340,83 +313,49 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   // CARPETAS
   // ==========================================
 
-  const createFolder = (event: FormEvent<HTMLFormElement>) => {
+  const createFolder = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const name = folderName.trim();
-
-    if (!name) return;
-
-    const updated: PatternFolder[] = [
-      ...folders,
-      {
-        id: crypto.randomUUID(),
-        name,
-        createdAt: new Date().toISOString()
-      }
-    ];
-
+    if (!name || busy || loading) return;
+    setBusy(true);
     try {
-      saveFolders(updated);
-      setFolders(updated);
-      setFolderName('');
-      setShowFolderForm(false);
-    } catch (error) {
-      console.error(error);
-      alert('No se pudo guardar la carpeta.');
-    }
+      const userId = await requireOwner();
+      const { error } = await supabase.from('kurotex_folders').insert({ id: crypto.randomUUID(), user_id: userId, name });
+      if (error) throw error;
+      await refresh(); setFolderName(''); setShowFolderForm(false);
+    } catch (error) { console.error(error); alert('No se pudo guardar la carpeta.'); }
+    finally { setBusy(false); }
   };
 
-  const renameFolder = (folder: PatternFolder) => {
-    const name = window.prompt(
-      'Nuevo nombre de la carpeta:',
-      folder.name
-    )?.trim();
-
+  const renameFolder = async (folder: PatternFolder) => {
+    if (busy || loading) return;
+    const name = window.prompt('Nuevo nombre de la carpeta:', folder.name)?.trim();
     if (!name || name === folder.name) return;
-
-    const updated = folders.map(item =>
-      item.id === folder.id
-        ? { ...item, name }
-        : item
-    );
-
+    setBusy(true);
     try {
-      saveFolders(updated);
-      setFolders(updated);
-    } catch (error) {
-      console.error(error);
-      alert('No se pudo cambiar el nombre.');
-    }
+      const userId = await requireOwner();
+      const { data, error } = await supabase.from('kurotex_folders').update({ name, updated_at: new Date().toISOString() })
+        .eq('user_id', userId).eq('id', folder.id).select('id').maybeSingle();
+      if (error || !data) throw error ?? new Error('Carpeta no encontrada.');
+      await refresh();
+    } catch (error) { console.error(error); alert('No se pudo cambiar el nombre.'); }
+    finally { setBusy(false); }
   };
 
-  const deleteFolder = (folder: PatternFolder) => {
-    const confirmed = window.confirm(
-      `¿Eliminar la carpeta "${folder.name}"? ` +
-      'Sus libros pasarán a Sin clasificar. ' +
-      'No se eliminará su contenido.'
-    );
-
-    if (!confirmed) return;
-
+  const deleteFolder = async (folder: PatternFolder) => {
+    if (busy || loading) return;
+    if (!window.confirm(`¿Eliminar la carpeta "${folder.name}"? Sus libros pasarán a Sin clasificar. No se eliminará su contenido.`)) return;
+    setBusy(true);
     try {
-      const updated = folders.filter(
-        item => item.id !== folder.id
-      );
-
-      saveFolders(updated);
-      removeFolderLocations(folder.id);
-
-      setFolders(updated);
-      setLocations(getBookLocations());
-
-      if (folderId === folder.id) {
-        setFolderId(null);
-      }
-    } catch (error) {
-      console.error(error);
-      alert('No se pudo eliminar la carpeta.');
-    }
+      const userId = await requireOwner();
+      const moved = await supabase.from('kurotex_books').update({ folder_id: null, updated_at: new Date().toISOString() })
+        .eq('user_id', userId).eq('folder_id', folder.id);
+      if (moved.error) throw moved.error;
+      const removed = await supabase.from('kurotex_folders').delete().eq('user_id', userId).eq('id', folder.id).select('id').maybeSingle();
+      if (removed.error || !removed.data) throw removed.error ?? new Error('Carpeta no encontrada.');
+      if (folderId === folder.id) setFolderId(null);
+    } catch (error) { console.error(error); alert('No se pudo completar la eliminación. Es posible que los libros ya estén en Sin clasificar.'); }
+    finally { try { await refresh(); } catch (error) { console.error(error); } setBusy(false); }
   };
 
   const openFolder = (id: string | null) => {
@@ -430,7 +369,8 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   // MOVER LIBROS
   // ==========================================
 
-  const moveBook = (book: LibraryBook) => {
+  const moveBook = async (book: LibraryBook) => {
+    if (busy || loading) return;
     const options = [
       '0 - Sin clasificar',
       ...folders.map(
@@ -458,21 +398,15 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
       return;
     }
 
+    setBusy(true);
     try {
-      if (index === 0) {
-        removeBookLocation(book.id);
-      } else {
-        setBookFolder(
-          book.id,
-          folders[index - 1].id
-        );
-      }
-
-      setLocations(getBookLocations());
-    } catch (error) {
-      console.error(error);
-      alert('No se pudo mover el libro.');
-    }
+      const userId = await requireOwner();
+      const { data, error } = await supabase.from('kurotex_books').update({ folder_id: index === 0 ? null : folders[index - 1].id, updated_at: new Date().toISOString() })
+        .eq('user_id', userId).eq('id', book.id).select('id').maybeSingle();
+      if (error || !data) throw error ?? new Error('Libro no encontrado.');
+      await refresh();
+    } catch (error) { console.error(error); alert('No se pudo mover el libro.'); }
+    finally { setBusy(false); }
   };
 
   // ==========================================
@@ -482,14 +416,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
   const deleteSelectedBook = async (
     book: LibraryBook
   ) => {
-    if (book.legacy) {
-      alert(
-        'Para eliminar un patrón anterior, ' +
-        'utiliza su ficha original.'
-      );
-      return;
-    }
-
     const confirmed = window.confirm(
       `¿Eliminar "${book.title}" y todas sus páginas? ` +
       'Esta acción no se puede deshacer.'
@@ -500,10 +426,10 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
     setBusy(true);
 
     try {
-      await deleteBook(book.id);
-      await deleteMiniBook(book.id);
-
-      removeBookLocation(book.id);
+      const userId = await requireOwner();
+      const { data, error } = await supabase.from('kurotex_books').delete().eq('user_id', userId).eq('id', book.id).select('id').maybeSingle();
+      if (error?.code === '23503') throw new Error('El libro está vinculado a un proyecto o pedido. Desvincúlalo antes de eliminarlo.');
+      if (error || !data) throw error ?? new Error('Libro no encontrado.');
 
       await refresh();
 
@@ -514,8 +440,7 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
       console.error(error);
 
       alert(
-        'No se pudo completar la eliminación. ' +
-        'Comprueba el estado del libro.'
+        error instanceof Error ? error.message : 'No se pudo eliminar el libro.'
       );
     } finally {
       setBusy(false);
@@ -623,30 +548,8 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
     </form>
   );
 
-  // ==========================================
-  // VISTA DE PATRONES ANTERIORES
-  // ==========================================
-
-  if (showLegacyEditor) {
-    return (
-      <section className="kuro-library">
-        <button
-          type="button"
-          className="kuro-library-back"
-          onClick={() => {
-            setShowLegacyEditor(false);
-            setSelectedBookId(null);
-            void refresh();
-          }}
-        >
-          <ArrowLeft size={18} />
-          Volver a la biblioteca
-        </button>
-
-        <Patterns />
-      </section>
-    );
-  }
+  if (loading || !owner || (loadedOwner !== owner && !loadError)) return <section className="kuro-library"><p role="status">Cargando tu biblioteca privada...</p></section>;
+  if (loadError) return <section className="kuro-library"><p role="alert">{loadError}</p><button className="kuro-library-primary" onClick={() => window.location.reload()}>Reintentar</button></section>;
 
   // ==========================================
   // INTERIOR DE UN MINI LIBRO
@@ -672,81 +575,13 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
             <h2>{selectedBook.title}</h2>
 
             <p>
-              {selectedBook.legacy
-                ? 'Patrón de tu biblioteca anterior'
-                : 'Mini libro digital'}
+              Mini libro digital
             </p>
           </div>
-
-          {selectedBook.legacy ? (
-            <button
-              type="button"
-              className="kuro-library-secondary"
-              onClick={() =>
-                setShowLegacyEditor(true)
-              }
-            >
-              <Pencil size={16} />
-              Gestionar ficha original
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="kuro-library-secondary"
-              onClick={() =>
-                editBook(selectedBook)
-              }
-            >
-              <Pencil size={16} />
-              Editar portada
-            </button>
-          )}
+          <button type="button" className="kuro-library-secondary" onClick={() => editBook(selectedBook)} disabled={busy}>
+            <Pencil size={16} /> Editar portada
+          </button>
         </div>
-
-        {selectedBook.pattern && (
-          <div className="kuro-pattern-details">
-            <h3>Información del patrón</h3>
-
-            <p>
-              <strong>Categoría:</strong>{' '}
-              {selectedBook.pattern.category}
-            </p>
-
-            <p>
-              <strong>Dificultad:</strong>{' '}
-              {selectedBook.pattern.difficulty}
-            </p>
-
-            {selectedBook.pattern.description && (
-              <p>
-                {selectedBook.pattern.description}
-              </p>
-            )}
-
-            {selectedBook.pattern.materials && (
-              <p>
-                <strong>Materiales:</strong>{' '}
-                {selectedBook.pattern.materials}
-              </p>
-            )}
-
-            {selectedBook.pattern.instructions && (
-              <p>
-                <strong>Instrucciones:</strong>{' '}
-                {selectedBook.pattern.instructions}
-              </p>
-            )}
-
-            {selectedBook.pattern.pdfName && (
-              <p>
-                <strong>PDF:</strong>{' '}
-                {selectedBook.pattern.pdfName}
-                {' · '}
-                Disponible desde la ficha original.
-              </p>
-            )}
-          </div>
-        )}
 
         {showBookForm && renderBookForm()}
 
@@ -768,15 +603,14 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
         </div>
 
         {bookTab === 'info' ? (
-          <PatternInfoPanel 
-          key={selectedBook.id}
-          bookId={selectedBook.id}
-          legacy={selectedBook.legacy}  />
-        ) : (
-          <BookEditor 
-          key={selectedBook.id}
-          bookId={selectedBook.id} />
-        )}
+          owner ? <PatternInfoPanel key={`${owner}:${selectedBook.id}`} bookId={selectedBook.id} ownerId={owner} /> : null
+        ) : owner ? (
+          <BookEditor
+            key={`${owner}:${selectedBook.id}`}
+            bookId={selectedBook.id}
+            ownerId={owner}
+          />
+        ) : null}
       </section>
     );
   }
@@ -807,15 +641,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
             Nueva carpeta
           </button>
 
-          <button
-            type="button"
-            className="kuro-library-secondary"
-            onClick={() =>
-              setShowLegacyEditor(true)
-            }
-          >
-            Gestionar patrones anteriores
-          </button>
         </div>
 
         {showFolderForm && (
@@ -836,7 +661,7 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
 
             <button
               type="submit"
-              className="kuro-library-primary"
+              className="kuro-library-primary" disabled={busy}
             >
               Crear
             </button>
@@ -1029,9 +854,7 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
                 <h3>{book.title}</h3>
 
                 <p>
-                  {book.legacy
-                    ? 'Patrón anterior'
-                    : 'Mini libro digital'}
+                  Mini libro digital
                 </p>
 
                 <div className="kuro-library-card-actions">
@@ -1064,7 +887,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
                     <Pencil size={16} />
                   </button>
 
-                  {!book.legacy && (
                     <button
                       type="button"
                       title="Eliminar"
@@ -1075,7 +897,6 @@ export default function PatternsLibrary({ requestedBookId = null }: PatternsLibr
                     >
                       <Trash2 size={16} />
                     </button>
-                  )}
                 </div>
               </div>
             </article>

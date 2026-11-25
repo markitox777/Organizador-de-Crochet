@@ -1,10 +1,33 @@
 import { useEffect, useRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
-import type { Editor } from '@tiptap/core';
+import { Extension, type Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Color from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import FontFamily from '@tiptap/extension-font-family';
+
+const FontSize = Extension.create({
+  name: 'kuroFontSize',
+  addGlobalAttributes() {
+    return [{
+      types: ['textStyle'],
+      attributes: {
+        fontSize: {
+          default: null,
+          parseHTML: element => {
+            const value = element.style.fontSize;
+            return /^(?:[1-6][0-9]|7[0-2])px$/.test(value) ? value : null;
+          },
+          renderHTML: attributes => {
+            const value = attributes.fontSize;
+            return typeof value === 'string' && /^(?:[1-6][0-9]|7[0-2])px$/.test(value)
+              ? { style: `font-size: ${value}` } : {};
+          }
+        }
+      }
+    }];
+  }
+});
 
 type Props = {
   elementId: string;
@@ -41,7 +64,7 @@ export default function RichTextEditor({
   onStateRef.current = onEditorStateChange;
 
   const editor = useEditor({
-    extensions: [StarterKit, TextStyle, Color, FontFamily],
+    extensions: [StarterKit, TextStyle, Color, FontFamily, FontSize],
     content: prepareContent(content),
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();

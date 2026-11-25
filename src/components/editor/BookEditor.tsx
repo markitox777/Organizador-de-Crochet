@@ -1,6 +1,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Editor } from '@tiptap/core';
+import { supabase } from '../../lib/supabase';
 import type {
   ChangeEvent,
   CSSProperties,
@@ -25,8 +26,8 @@ import {
 } from 'lucide-react';
 
 import {
-  getBook,
-  saveBook,
+  getCloudBookPages,
+  saveCloudBookPages,
   DEFAULT_PAPER
 } from '../../services/bookService';
 
@@ -237,8 +238,8 @@ function AutoGrowTextBox({
         // El texto usa píxeles CSS reales, mientras que el cuadro guarda
         // su altura en unidades lógicas de la hoja.
         const requiredPixels = Math.max(content.scrollHeight, content.getBoundingClientRect().height);
-        const desired = Math.max(50, Math.ceil((requiredPixels + 4) / scale));
-        const available = Math.max(50, pageHeight - element.y);
+        const desired = Math.max(12, Math.ceil((requiredPixels + 2) / scale));
+        const available = Math.max(12, pageHeight - element.y);
         const next = Math.min(desired, available);
         if (Math.abs(next - heightRef.current) > 2) {
           heightRef.current = next;
@@ -290,10 +291,12 @@ function AutoGrowTextBox({
 
 type BookEditorProps = {
   bookId?: string;
+  ownerId?: string;
 };
 
 export default function BookEditor({
-  bookId = 'demo-book'
+  bookId = 'demo-book',
+  ownerId
 }: BookEditorProps) {
 
   const [pages, setPages] = useState<BookPage[]>([
@@ -312,6 +315,11 @@ export default function BookEditor({
     useState(false);
 
   const [bookLoaded, setBookLoaded] = useState(false);
+  const ownerRef = useRef<string | null>(null);
+  const savedPagesRef = useRef<BookPage[] | null>(null);
+  const pendingSaveRef = useRef<(() => void) | null>(null);
+  const [retry, setRetry] = useState(0);
+  const [saveError, setSaveError] = useState('');
 
   const [saveStatus, setSaveStatus] =
     useState<SaveStatus>('loading');
@@ -357,16 +365,22 @@ export default function BookEditor({
 
     async function loadSavedBook() {
       try {
-        const savedPages = await getBook(bookId);
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data.user || (ownerId && data.user.id !== ownerId)) {
+          throw new Error('La sesión cambió. Vuelve a abrir el cuaderno.');
+        }
+        const userId = data.user.id;
+        const savedPages = await getCloudBookPages(bookId, userId);
+        if (savedPages === null) throw new Error('No existe este mini libro en tu cuenta.');
 
         if (!active) return;
 
-        if (
-          Array.isArray(savedPages) &&
-          savedPages.length > 0
-        ) {
-          setPages(savedPages);
-        }
+        ownerRef.current = userId;
+        const initialPages = savedPages.length ? savedPages : [newPage()];
+        savedPagesRef.current = initialPages;
+        setPages(initialPages);
+        setPageIndex(0);
+        setSaveError('');
 
         setSaveStatus('saved');
         setBookLoaded(true);
@@ -377,6 +391,7 @@ export default function BookEditor({
         );
 
         if (active) {
+          setSaveError('No se pudo cargar el cuaderno privado. Vuelve a abrirlo.');
           setSaveStatus('error');
         }
       }
@@ -387,52 +402,56 @@ export default function BookEditor({
     return () => {
       active = false;
     };
-  }, [bookId]);
+  }, [bookId, ownerId]);
 
-  // Guardar cambios automáticamente.
+  // Guardar únicamente cambios reales, en orden y con el propietario capturado.
   useEffect(() => {
-    if (!bookLoaded) return;
-
+    const userId = ownerRef.current;
+    if (!bookLoaded || !userId || pages === savedPagesRef.current) return;
     setSaveStatus('saving');
-
-    let cancelled = false;
-
-    const timeout = window.setTimeout(() => {
-      const snapshot = pages;
-
-      const nextSave = saveQueueRef.current
-        .catch(() => undefined)
-        .then(() => {
-          if (cancelled) return;
-          return saveBook(bookId, snapshot);
-        });
-
+    setSaveError('');
+    let active = true;
+    let queued = false;
+    const snapshot = pages;
+    const enqueue = () => {
+      if (queued) return;
+      queued = true;
+      if (pendingSaveRef.current === enqueue) pendingSaveRef.current = null;
+      const nextSave = saveQueueRef.current.catch(() => undefined).then(async () => {
+        await saveCloudBookPages(bookId, snapshot, userId);
+        savedPagesRef.current = snapshot;
+      });
       saveQueueRef.current = nextSave;
-
-      void nextSave.then(
-        () => {
-          if (!cancelled) {
-            setSaveStatus('saved');
-          }
-        },
-        error => {
-          console.error(
-            'Error al guardar:',
-            error
-          );
-
-          if (!cancelled) {
-            setSaveStatus('error');
-          }
+      void nextSave.then(() => {
+        if (active) setSaveStatus('saved');
+      }, error => {
+        console.error('Error al guardar:', error);
+        if (active) {
+          setSaveError(error instanceof Error ? error.message : 'No se pudieron guardar los cambios.');
+          setSaveStatus('error');
         }
-      );
-    }, 700);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
+      });
     };
-  }, [pages, bookLoaded, bookId]);
+    pendingSaveRef.current = enqueue;
+    const timeout = window.setTimeout(enqueue, 700);
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+
+    };
+  }, [pages, bookLoaded, bookId, retry]);
+
+  useEffect(() => () => { pendingSaveRef.current?.(); }, []);
+
+  useEffect(() => {
+    if (!bookLoaded || saveStatus === 'saved') return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [bookLoaded, saveStatus]);
 
   const updatePage = (
     updater: (page: BookPage) => BookPage
@@ -508,6 +527,32 @@ export default function BookEditor({
     setSelectedId(element.id);
   };
 
+  // Ajustar también los marcos cuadrados de imágenes guardadas anteriormente.
+  const fitImageFrame = (pageId: string, elementId: string, source: string, naturalWidth: number, naturalHeight: number) => {
+    if (!bookLoaded || !naturalWidth || !naturalHeight) return;
+    setPages(previous => {
+      let changed = false;
+      const next = previous.map(page => {
+        if (page.id !== pageId) return page;
+        let pageChanged = false;
+        const elements = page.elements.map(item => {
+          if (item.id !== elementId || item.type !== 'image' || item.content !== source) return item;
+          const factor = Math.min(item.width / naturalWidth, item.height / naturalHeight);
+          if (!Number.isFinite(factor) || factor <= 0) return item;
+          const width = naturalWidth * factor;
+          const height = naturalHeight * factor;
+          if (Math.abs(width - item.width) < 0.01 && Math.abs(height - item.height) < 0.01) return item;
+          pageChanged = true;
+          return { ...item, x: item.x + (item.width - width) / 2, y: item.y + (item.height - height) / 2, width, height };
+        });
+        if (!pageChanged) return page;
+        changed = true;
+        return { ...page, elements };
+      });
+      return changed ? next : previous;
+    });
+  };
+
   const addImage = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
@@ -533,31 +578,29 @@ export default function BookEditor({
       return;
     }
 
+    const targetPageId = currentPage.id;
     const reader = new FileReader();
-
     reader.onload = () => {
-      if (typeof reader.result !== 'string') {
-        return;
-      }
-
-      const element: BookElement = {
-        id: crypto.randomUUID(),
-        type: 'image',
-        x: 90,
-        y: 120,
-        width: 240,
-        height: 240,
-        content: reader.result
+      const content = reader.result;
+      if (typeof content !== 'string') return;
+      const image = new Image();
+      image.onload = () => {
+        if (!image.naturalWidth || !image.naturalHeight) return;
+        const scale = Math.min(1, 240 / image.naturalWidth, 240 / image.naturalHeight);
+        const width = image.naturalWidth * scale;
+        const height = image.naturalHeight * scale;
+        const element: BookElement = {
+          id: crypto.randomUUID(), type: 'image', x: 90, y: 120,
+          width, height, content
+        };
+        setPages(previous => previous.map(page => page.id === targetPageId
+          ? { ...page, elements: [...page.elements, element] } : page));
+        setSelectedId(element.id);
       };
-
-      updatePage(page => ({
-        ...page,
-        elements: [...page.elements, element]
-      }));
-
-      setSelectedId(element.id);
+      image.onerror = () => alert('No se pudo leer la imagen.');
+      image.src = content;
     };
-
+    reader.onerror = () => alert('No se pudo leer el archivo.');
     reader.readAsDataURL(file);
     event.target.value = '';
   };
@@ -642,10 +685,26 @@ export default function BookEditor({
             changed = true;
             return { ...item, x, y };
           }
-          const width = Math.max(80, Math.min(PAGE_WIDTH - interaction.startX,
-            Math.round(interaction.startWidth + deltaX)));
-          const height = Math.max(50, Math.min(interaction.pageHeight - interaction.startY,
-            Math.round(interaction.startHeight + deltaY)));
+          let width: number;
+          let height: number;
+          if (item.type === 'image') {
+            const w = Math.max(1, interaction.startWidth);
+            const h = Math.max(1, interaction.startHeight);
+            const maxScale = Math.max(0.001, Math.min(
+              (PAGE_WIDTH - interaction.startX) / w,
+              (interaction.pageHeight - interaction.startY) / h
+            ));
+            const minScale = Math.min(maxScale, 24 / Math.max(w, h));
+            const requestedScale = 1 + (deltaX * w + deltaY * h) / (w * w + h * h);
+            const scale = Math.max(minScale, Math.min(maxScale, requestedScale));
+            width = w * scale;
+            height = h * scale;
+          } else {
+            width = Math.max(80, Math.min(PAGE_WIDTH - interaction.startX,
+              Math.round(interaction.startWidth + deltaX)));
+            height = Math.max(50, Math.min(interaction.pageHeight - interaction.startY,
+              Math.round(interaction.startHeight + deltaY)));
+          }
           if (width === item.width && height === item.height) return item;
           changed = true;
           return { ...item, width, height };
@@ -838,12 +897,18 @@ export default function BookEditor({
             'Guardando...'}
 
           {saveStatus === 'saved' &&
-            '✓ Guardado'}
+            '✓ Guardado en la nube'}
 
           {saveStatus === 'error' &&
             'Error de guardado'}
         </span>
       </div>
+
+      {saveError && (
+        <div role="alert" className="kuro-editor-status">
+          {saveError} {bookLoaded && <button type="button" onClick={() => setRetry(value => value + 1)}>Reintentar guardado</button>}
+        </div>
+      )}
 
       {/* Barra exclusiva para celular. La barra de escritorio se conserva. */}
       <div className="kuro-mobile-tools" aria-label="Herramientas del mini libro">
@@ -990,6 +1055,22 @@ export default function BookEditor({
               <option value="'Comic Sans MS', cursive">Comic Sans</option>
               <option value="'Courier New', monospace">Courier New</option>
               <option value="'Poppins', sans-serif">Poppins</option>
+            </select>
+          </label>
+          <label className="kuro-format-font">
+            <span>Tamaño</span>
+            <select aria-label="Tamaño de letra" disabled={!activeEditor}
+              value={activeEditor?.getAttributes('textStyle').fontSize ?? ''}
+              onChange={event => {
+                if (!activeEditor) return;
+                activeEditor.chain().focus().setMark('textStyle', {
+                  fontSize: event.target.value || null
+                }).run();
+              }}>
+              <option value="">Original ({selectedText.textStyle?.fontSize ?? 16} px)</option>
+              {[10,12,14,16,18,20,22,24,28,32,36,40,48,56,64,72].map(size => (
+                <option key={size} value={`${size}px`}>{size} px</option>
+              ))}
             </select>
           </label>
           <div className="kuro-format-actions">
@@ -1232,11 +1313,17 @@ export default function BookEditor({
                     height: `${
                       element.height / pageHeight * 100
                     }%`,
-                    zIndex: index + 1
+                    zIndex: index + 1,
+                    minHeight: 0,
+                    ...(element.type === 'image' ? { touchAction: 'none', cursor: 'grab', minWidth: 0 } : {})
                   }}
-                  onPointerDown={() => {
-                    // Tocar el contenido solo selecciona: no inicia arrastre.
-                    setSelectedId(element.id);
+                  onPointerDown={event => {
+                    if (!bookLoaded) return;
+                    if (element.type === 'image') {
+                      startInteraction(event, element, 'move');
+                    } else {
+                      setSelectedId(element.id);
+                    }
                   }}
                 >
                   {element.type === 'text' ? (
@@ -1254,6 +1341,11 @@ export default function BookEditor({
                     <img
                       src={element.content}
                       alt="Imagen del mini libro"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'grab', touchAction: 'none', userSelect: 'none', display: 'block' }}
+                      onLoad={event => {
+                        const image = event.currentTarget;
+                        fitImageFrame(currentPage.id, element.id, element.content, image.naturalWidth, image.naturalHeight);
+                      }}
                       draggable={false}
                     />
                   )}
